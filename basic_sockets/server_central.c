@@ -47,7 +47,7 @@ void *connection_handler(void *socket_desc)
     valread = read(client_fd, buffer, 1024 - 1);
     printf("CS: %s\n", buffer);
 
-    //send message to the client
+    // Send message to the client
     write(client_socket, buffer, strlen(buffer));
     
     // close connection to the client
@@ -61,6 +61,8 @@ int main()
     int server_fd, client_socket, *new_socket;
     struct sockaddr_in address;
     int addrlen = sizeof(address);
+
+    
 
     // Socket creation
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
@@ -85,18 +87,18 @@ int main()
         exit(EXIT_FAILURE);
     }
 
-    printf("Servidor escuchando en el puerto %d...\n", PORT);
+    printf("Server found in PORT %d...\n", PORT);
 
     while (1)
     {
         // Accept the connection instance
         if ((client_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen)) < 0)
         {
-            perror("Accept failed");
+            perror("Connection failed");
             exit(EXIT_FAILURE);
         }
 
-        printf("Conexión aceptada\n");
+        printf("Connection accepted\n");
 
         // Create a new socket for the new client
         new_socket = malloc(1);

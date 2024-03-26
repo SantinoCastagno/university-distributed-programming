@@ -3,7 +3,21 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <string.h>
+
 #define PORT 8080
+#define S1 "aries"
+#define S2 "tauro"
+#define S3 "geminis"
+#define S4 "cancer"
+#define S5 "leo"
+#define S6 "virgo"
+#define S7 "libra"
+#define S8 "escorpio"
+#define S9 "sagitario"
+#define S10 "capricornio"
+#define S11 "acuario"
+#define S12 "piscis"
 
 int main(int argc, char const *argv[])
 {
@@ -12,6 +26,26 @@ int main(int argc, char const *argv[])
     struct sockaddr_in serv_addr;
     char *hello = "Hello from client";
     char buffer[1024] = {0};
+    const char del[] = "-";
+    char *token;
+
+    // Verify params
+    if (argc != 3)
+    {
+        printf("Cantidad de parámetros incorrecta\n");
+        return 1;
+    }
+
+    printf("Cantidad de parametros correcta\n");
+    printf("%d\n", argc);
+    printf("%s\n", argv[1]);
+    printf("%s\n", argv[2]);
+    // TODO: fix this
+    do {
+        token = strtok(argv[2], del);
+        printf("%s\n", token);
+    } while (token != NULL);
+    return 0; // FINISH
 
     // Socket creation
     if ((client_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
@@ -41,7 +75,7 @@ int main(int argc, char const *argv[])
     send(client_fd, hello, strlen(hello), 0);
     printf("Client: Hello message sent\n");
 
-    // Read answer from the server 
+    // Read answer from the server
     valread = read(client_fd, buffer, 1024 - 1);
     printf("Client: %s\n", buffer);
 
