@@ -11,6 +11,9 @@
 #define PORT_HOR_SERVER 9090
 #define PORT_WEA_SERVER 9091
 
+//Function
+struct Date stringToDate(char* dateString);
+
 // function executed for each thread
 void *connection_handler(void *socket_desc)
 {
