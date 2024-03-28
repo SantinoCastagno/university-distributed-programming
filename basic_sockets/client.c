@@ -1,9 +1,12 @@
 #include <arpa/inet.h>
+#include <sys/socket.h>
+
 #include <stdio.h>
 #include <string.h>
-#include <sys/socket.h>
 #include <unistd.h>
-#include <string.h>
+#include <stdlib.h>
+
+#include "utils.h"
 
 #define PORT 8080
 #define S1 "aries"
@@ -19,39 +22,45 @@
 #define S11 "acuario"
 #define S12 "piscis"
 
-int main(int argc, char const *argv[])
+struct Date
+{
+    int year;
+    int month;
+    int day;
+};
+
+int main(int argc, char *argv[])
 {
     // Client variables
     int status, valread, client_fd;
     struct sockaddr_in serv_addr;
     char *hello = "Hello from client";
     char buffer[1024] = {0};
-    const char del[] = "-";
     char *token;
+    struct Date paramDate;
 
     // Verify params
     if (argc != 3)
     {
-        printf("Cantidad de parámetros incorrecta\n");
-        return 1;
+        printf("Error: params incorrects\n");
+        exit(EXIT_FAILURE);
     }
 
-    printf("Cantidad de parametros correcta\n");
-    printf("%d\n", argc);
-    printf("%s\n", argv[1]);
-    printf("%s\n", argv[2]);
-    // TODO: fix this
-    do {
-        token = strtok(argv[2], del);
-        printf("%s\n", token);
-    } while (token != NULL);
-    return 0; // FINISH
+    // Get and check date
+    paramDate = stringToDate(argv[2]);
+
+    // Check zodiac sign
+    if (strcmp(argv[1], S1) != 0 && strcmp(argv[1], S2) != 0 && strcmp(argv[1], S3) != 0 && strcmp(argv[1], S4) != 0 && strcmp(argv[1], S5) != 0 && strcmp(argv[1], S6) != 0 && strcmp(argv[1], S7) != 0 && strcmp(argv[1], S8) != 0 && strcmp(argv[1], S9) != 0 && strcmp(argv[1], S10) != 0 && strcmp(argv[1], S11) != 0 && strcmp(argv[1], S12) != 0)
+    {
+        printf("Error: incorrect zodiac sign name.\n");
+        exit(EXIT_FAILURE);
+    }
 
     // Socket creation
     if ((client_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
         printf("\n Socket creation error \n");
-        return -1;
+        exit(EXIT_FAILURE);
     }
 
     // Configure server params
@@ -60,7 +69,7 @@ int main(int argc, char const *argv[])
     if (inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr) <= 0)
     {
         printf("\nInvalid address/ Address not supported \n");
-        return -1;
+        exit(EXIT_FAILURE);
     }
 
     // Stablish connection to the server
@@ -68,7 +77,7 @@ int main(int argc, char const *argv[])
                           sizeof(serv_addr))) < 0)
     {
         printf("\nConnection Failed \n");
-        return -1;
+        exit(EXIT_FAILURE);
     }
 
     // Send message to the server
