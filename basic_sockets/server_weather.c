@@ -4,58 +4,116 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <pthread.h>
+
 #define PORT 9091
-int main(int argc, char const *argv[])
+#define MAX_CONNECTIONS 5
+
+char *options[] = {"Sunny with clear skies and warm temperatures.",
+                   "Partly cloudy with a chance of scattered showers in the afternoon.",
+                   "Overcast with intermittent rain throughout the day.",
+                   "Mostly sunny with a light breeze from the northwest.",
+                   "Thunderstorms likely in the evening, with heavy rainfall expected.",
+                   "Foggy conditions in the morning, gradually clearing up by midday.",
+                   "A mix of sun and clouds, with mild temperatures and no precipitation.",
+                   "Windy conditions expected, especially in coastal areas.",
+                   "Freezing rain and icy roads possible, use caution when driving.",
+                   "Clear skies overnight with temperatures dropping below freezing."};
+int numOptions;
+
+// Function to select a random string from an array of strings
+// TODO: resolve pointers problem
+char *selectRandomString(char *strings[], int numStrings)
 {
-    // Server variables
-    int server_fd, new_socket;
-    ssize_t valread;
+    // Generate a seed for the rand() function based on the current time
+    srand(time(NULL));
+
+    // Generate a random index between 0 and numStrings-1
+    int randomIndex = rand() % numStrings;
+
+    // Return the string corresponding to the random index
+    printf("DEBUG:%s\n", strings[randomIndex]);
+    return strings[randomIndex];
+}
+
+// function executed for each thread
+void *connection_handler(void *socket_desc)
+{
+    int client_socket = *(int *)socket_desc, status, client_fd, valread;
+    struct sockaddr_in serv_addr;
+    char *buffer;
+
+    // Generate response, select a random string from the options
+    buffer = selectRandomString(options, numOptions);
+
+    // Send message to the client
+    write(client_socket, buffer, strlen(buffer));
+    printf("WS: Message send to the client.\n");
+    printf("WS: %s\n", buffer);
+
+    // close connection to the client
+    close(client_socket);
+    free(socket_desc);
+    pthread_exit(NULL);
+}
+
+int main()
+{
+    int server_fd, client_socket, *new_socket;
     struct sockaddr_in address;
-    int opt = 1;
-    socklen_t addrlen = sizeof(address);
-    char buffer[1024] = {0};
-    char *hello = "Hello from central server";
+    int addrlen = sizeof(address);
+    numOptions = sizeof(options) / sizeof(options[0]);
 
     // Socket creation
-    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
     {
-        perror("socket failed");
+        perror("Socket creation failed");
         exit(EXIT_FAILURE);
     }
 
-    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)))
-    {
-        perror("setsockopt");
-        exit(EXIT_FAILURE);
-    }
-    
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
     address.sin_port = htons(PORT);
-    if (bind(server_fd, (struct sockaddr *)&address,sizeof(address)) < 0)
+    if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0)
     {
-        perror("bind failed");
+        perror("Bind failed");
         exit(EXIT_FAILURE);
     }
-    if (listen(server_fd, 3) < 0)
-    {
-        perror("listen");
-        exit(EXIT_FAILURE);
-    }
-    if ((new_socket = accept(server_fd, (struct sockaddr *)&address,
-                             &addrlen)) < 0)
-    {
-        perror("accept");
-        exit(EXIT_FAILURE);
-    }
-    valread = read(new_socket, buffer, 1024 - 1);
-    printf("%s\n", buffer);
-    send(new_socket, hello, strlen(hello), 0);
-    printf("Hello message sent\n");
 
-    // closing the connected socket
-    close(new_socket);
-    // closing the listening socket
-    close(server_fd);
+    // Listen for connections
+    if (listen(server_fd, MAX_CONNECTIONS) < 0)
+    {
+        perror("Listen failed");
+        exit(EXIT_FAILURE);
+    }
+
+    printf("Server found in PORT %d...\n", PORT);
+
+    while (1)
+    {
+        // Accept the connection instance
+        if ((client_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen)) < 0)
+        {
+            perror("Connection failed");
+            exit(EXIT_FAILURE);
+        }
+
+        printf("Connection accepted\n");
+
+        // Create a new socket for the new client
+        new_socket = malloc(1);
+        *new_socket = client_socket;
+
+        // Create a new thread
+        pthread_t thread_id;
+        if (pthread_create(&thread_id, NULL, connection_handler, (void *)new_socket) < 0)
+        {
+            perror("Thread creation failed");
+            exit(EXIT_FAILURE);
+        }
+
+        printf("Handler assigned\n");
+    }
+
     return 0;
 }

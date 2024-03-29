@@ -56,6 +56,8 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
+    // TODO: concat both params to send one message
+
     // Socket creation
     if ((client_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {

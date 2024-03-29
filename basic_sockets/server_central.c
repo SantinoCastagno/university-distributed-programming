@@ -14,19 +14,22 @@
 // function executed for each thread
 void *connection_handler(void *socket_desc)
 {
-    int client_socket = *(int *)socket_desc, status, client_fd, valread;
+    int client_socket = *(int *)socket_desc, status, client_hs_fd, client_we_fd, valread;
     struct sockaddr_in serv_addr;
     char *hello = "Hello from client";
     char buffer[1024] = {0};
 
-    // Socket creation to the other server
-    if ((client_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+    read(client_socket, buffer, 1024);
+    printf("SC - Message received:%s\n", buffer);
+
+    // Socket creation to the horoscope server
+    if ((client_hs_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
         printf("Socket creation error \n");
         exit(EXIT_FAILURE);
     }
 
-    // Configure server params
+    // Configure horoscope server params
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_port = htons(PORT_HOR_SERVER);
     if (inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr) <= 0)
@@ -35,22 +38,60 @@ void *connection_handler(void *socket_desc)
         exit(EXIT_FAILURE);
     }
 
-    // Stablish connection to the server
-    if ((status = connect(client_fd, (struct sockaddr *)&serv_addr,
+    // Stablish connection to the horoscope server
+    if ((status = connect(client_hs_fd, (struct sockaddr *)&serv_addr,
                           sizeof(serv_addr))) < 0)
     {
         printf("Connection Failed \n");
         exit(EXIT_FAILURE);
     }
 
-    // Send message to the server
-    send(client_fd, hello, strlen(hello), 0);
+    // Socket creation to the weather server
+    if ((client_we_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+    {
+        printf("Socket creation error \n");
+        exit(EXIT_FAILURE);
+    }
+
+    // Configure weather server params
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_port = htons(PORT_HOR_SERVER);
+    if (inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr) <= 0)
+    {
+        printf("Invalid address/ Address not supported \n");
+        exit(EXIT_FAILURE);
+    }
+
+    // Stablish connection to the weather server
+    if ((status = connect(client_we_fd, (struct sockaddr *)&serv_addr,
+                          sizeof(serv_addr))) < 0)
+    {
+        printf("Connection Failed \n");
+        exit(EXIT_FAILURE);
+    }
+
+    // TODO: EXTRACT PARAMS
+
+    // TODO: CHECK PARAMS IN CACHE
+
+    // TODO: SEND PARAMS TO THE SERVERS
+    // Send message to the horoscope server
+    send(client_hs_fd, hello, strlen(hello), 0);
     printf("CS: Hello message sent to the HS\n");
 
-    // Read answer from the server
-    valread = read(client_fd, buffer, 1024 - 1);
+    // Send message to the weather server
+    send(client_we_fd, hello, strlen(hello), 0);
+    printf("CS: Hello message sent to the HS\n");
+
+    // Read answer from the horoscope server
+    valread = read(client_hs_fd, buffer, 1024 - 1);
     printf("CS: %s\n", buffer);
 
+    // Read answer from the weather server
+    valread = read(client_we_fd, buffer, 1024 - 1);
+    printf("CS: %s\n", buffer);
+
+    // TODO: merge the answer of the servers
     // Send message to the client
     write(client_socket, buffer, strlen(buffer));
 
