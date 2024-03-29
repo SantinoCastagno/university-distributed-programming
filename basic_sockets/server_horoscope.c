@@ -23,7 +23,7 @@ int numOptions;
 
 // Function to select a random string from an array of strings
 // TODO: resolve pointers problem
-int selectRandomString(char *strings[], int numStrings, char* res[])
+char *selectRandomString(char *strings[], int numStrings)
 {
     // Generate a seed for the rand() function based on the current time
     srand(time(NULL));
@@ -32,10 +32,8 @@ int selectRandomString(char *strings[], int numStrings, char* res[])
     int randomIndex = rand() % numStrings;
 
     // Return the string corresponding to the random index
-    printf("DEBUG:%s\n",strings[randomIndex]);
-    *res = strings[randomIndex];
-    printf("DEBUG:%s\n",res);
-    return 0;
+    printf("DEBUG:%s\n", strings[randomIndex]);
+    return strings[randomIndex];
 }
 
 // function executed for each thread
@@ -43,13 +41,10 @@ void *connection_handler(void *socket_desc)
 {
     int client_socket = *(int *)socket_desc, status, client_fd, valread;
     struct sockaddr_in serv_addr;
-    char buffer[1024] = {0};
+    char *buffer;
 
     // Generate response, select a random string from the options
-    if(selectRandomString(options, numOptions, buffer)){
-        printf("Error: in select random responde\n");
-        exit(EXIT_FAILURE);
-    }
+    buffer = selectRandomString(options, numOptions);
 
     // Send message to the client
     write(client_socket, buffer, strlen(buffer));
