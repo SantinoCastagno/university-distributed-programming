@@ -1,10 +1,10 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-#include <stdlib.h>
 
 #include "utils.h"
 
@@ -34,8 +34,7 @@ int main(int argc, char *argv[])
     // Client variables
     int status, valread, client_fd;
     struct sockaddr_in serv_addr;
-    char *hello = "Hello from client";
-    char buffer[1024] = {0};
+    char buffer_send[1024] = {0}, buffer_recv[1024] = {0};
     char *token;
     struct Date paramDate;
 
@@ -46,9 +45,6 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    // Get and check date
-    paramDate = stringToDate(argv[2]);
-
     // Check zodiac sign
     if (strcmp(argv[1], S1) != 0 && strcmp(argv[1], S2) != 0 && strcmp(argv[1], S3) != 0 && strcmp(argv[1], S4) != 0 && strcmp(argv[1], S5) != 0 && strcmp(argv[1], S6) != 0 && strcmp(argv[1], S7) != 0 && strcmp(argv[1], S8) != 0 && strcmp(argv[1], S9) != 0 && strcmp(argv[1], S10) != 0 && strcmp(argv[1], S11) != 0 && strcmp(argv[1], S12) != 0)
     {
@@ -56,12 +52,16 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    // TODO: concat both params to send one message
+    // Get and check date
+    paramDate = stringToDate(argv[2]);
+
+    // Concat both params to send one message
+    sprintf(buffer_send, "%s %s", argv[1], argv[2]);
 
     // Socket creation
     if ((client_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
-        printf("\n Socket creation error \n");
+        printf("Socket creation error \n");
         exit(EXIT_FAILURE);
     }
 
@@ -83,12 +83,12 @@ int main(int argc, char *argv[])
     }
 
     // Send message to the server
-    send(client_fd, hello, strlen(hello), 0);
+    send(client_fd, buffer_send, strlen(buffer_send), 0);
     printf("Client: Hello message sent\n");
 
     // Read answer from the server
-    valread = read(client_fd, buffer, 1024 - 1);
-    printf("Client: %s\n", buffer);
+    valread = read(client_fd, buffer_recv, 1024 - 1);
+    printf("Predictions:\n %s\n", buffer_recv);
 
     // closing the connected socket
     close(client_fd);

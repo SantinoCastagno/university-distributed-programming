@@ -16,11 +16,7 @@ void *connection_handler(void *socket_desc)
 {
     int client_socket = *(int *)socket_desc, status, client_hs_fd, client_we_fd, valread;
     struct sockaddr_in serv_addr;
-    char *hello = "Hello from client";
-    char buffer[1024] = {0};
-
-    read(client_socket, buffer, 1024);
-    printf("SC - Message received:%s\n", buffer);
+    char buffer_weather[1024] = {0}, buffer_horoscope[1024], buffer_client[1024] = {0}, sign[32], date[12];
 
     // Socket creation to the horoscope server
     if ((client_hs_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
@@ -70,30 +66,39 @@ void *connection_handler(void *socket_desc)
         exit(EXIT_FAILURE);
     }
 
-    // TODO: EXTRACT PARAMS
+    // Extract message
+    read(client_socket, buffer_client, 1024);
+    
+    // Check message receive
+    if (sscanf(buffer_client, "%s %s", &sign, &date) != 2)
+    {
+        printf("Error: incorrect format of the date.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    printf("SC:%s\n", sign);
+    printf("SC:%s\n", date);
 
     // TODO: CHECK PARAMS IN CACHE
 
     // TODO: SEND PARAMS TO THE SERVERS
-    // Send message to the horoscope server
-    send(client_hs_fd, hello, strlen(hello), 0);
-    printf("CS: Hello message sent to the HS\n");
-
-    // Send message to the weather server
-    send(client_we_fd, hello, strlen(hello), 0);
-    printf("CS: Hello message sent to the HS\n");
+    // Send message to the other servers
+    send(client_hs_fd, buffer_horoscope, strlen(buffer_horoscope), 0);
+    send(client_we_fd, buffer_weather, strlen(buffer_weather), 0);
 
     // Read answer from the horoscope server
-    valread = read(client_hs_fd, buffer, 1024 - 1);
-    printf("CS: %s\n", buffer);
+    valread = read(client_hs_fd, buffer_horoscope, 1024 - 1);
+    printf("CS: %s\n", buffer_horoscope);
 
     // Read answer from the weather server
-    valread = read(client_we_fd, buffer, 1024 - 1);
-    printf("CS: %s\n", buffer);
+    valread = read(client_we_fd, buffer_weather, 1024 - 1);
+    printf("CS: %s\n", buffer_weather);
 
     // TODO: merge the answer of the servers
+    sprintf(buffer_client, "%s\n%s\n", buffer_horoscope, buffer_weather);
+
     // Send message to the client
-    write(client_socket, buffer, strlen(buffer));
+    write(client_socket, buffer_client, strlen(buffer_client));
 
     // close connection to the client
     close(client_socket);
