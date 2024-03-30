@@ -20,14 +20,17 @@ typedef struct
 
 // function executed for each thread
 void *connection_handler(void *args)
-{
+{   
     ThreadArgs *thread_args = (ThreadArgs *)args;
     int client_socket = *(int *)thread_args->client_socket_ptr;
     int server_hor_socket = *(int *)thread_args->server_hor_ptr;
     int server_wea_socket = *(int *)thread_args->server_wea_ptr;
-    int status, client_hs_fd, client_we_fd, valread;
+    int status, valread;
     struct sockaddr_in serv_addr;
-    char buffer_weather[1024] = {0}, buffer_horoscope[1024], buffer_client[1024] = {0}, sign[32], date[12];
+    char buffer_weather[1024] = {0}, buffer_horoscope[1024] = {0}, buffer_client[1024] = {0}, sign[32], date[12];
+
+    printf("DEBUG: %x\t %d\n", (int *)thread_args->server_hor_ptr, *(int *)thread_args->server_hor_ptr);
+    printf("DEBUG: %d\n", server_hor_socket);
 
     // Extract message
     read(client_socket, buffer_client, 1024);
@@ -39,19 +42,19 @@ void *connection_handler(void *args)
         exit(EXIT_FAILURE);
     }
 
-    // TODO: CHECK PARAMS IN CACHE
+    // TODO: PROGRAMMING CACHE
 
     // Send message to the other servers
-    send(client_hs_fd, buffer_horoscope, strlen(buffer_horoscope), 0);
-    send(client_we_fd, buffer_weather, strlen(buffer_weather), 0);
+    write(server_hor_socket, buffer_horoscope, strlen(buffer_horoscope));
+    write(server_wea_socket, buffer_weather, strlen(buffer_weather));
 
     // Read answer from the horoscope server
-    valread = read(client_hs_fd, buffer_horoscope, 1024 - 1);
+    valread = read(server_hor_socket, buffer_horoscope, 1024 - 1);
     printf("CS: %s\n", buffer_horoscope);
 
     // Read answer from the weather server
-    valread = read(client_we_fd, buffer_weather, 1024 - 1);
-    printf("CS: %s\n", buffer_weather);
+    valread = read(server_wea_socket, buffer_weather, 1024 - 1);
+    printf("CS: %s\n", buffer_weather); //THE EXECUTION FINISH HERE
 
     // TODO: merge the answer of the servers
     sprintf(buffer_client, "%s\n%s\n", buffer_horoscope, buffer_weather);
@@ -71,13 +74,14 @@ int main()
     struct sockaddr_in address, serv_addr;
     int addrlen = sizeof(address), status;
 
+    printf("DEBUG: %x\t %d\n", server_hor_ptr, *server_hor_ptr);
     server_hor_ptr = malloc(1);
     server_wea_ptr = malloc(1);
 
     // Socket creation to the horoscope server
     if ((*server_hor_ptr = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
-        printf("Socket creation error \n");
+        printf("Socket creation error\n");
         exit(EXIT_FAILURE);
     }
 
@@ -86,7 +90,7 @@ int main()
     serv_addr.sin_port = htons(PORT_HOR_SERVER);
     if (inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr) <= 0)
     {
-        printf("Invalid address/ Address not supported \n");
+        printf("Invalid address/ Address not supported\n");
         exit(EXIT_FAILURE);
     }
 
@@ -94,14 +98,14 @@ int main()
     if ((status = connect(*server_hor_ptr, (struct sockaddr *)&serv_addr,
                           sizeof(serv_addr))) < 0)
     {
-        printf("Connection Failed \n");
+        printf("Connection Failed\n");
         exit(EXIT_FAILURE);
     }
 
     // Socket creation to the weather server
     if ((*server_wea_ptr = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
-        printf("Socket creation error \n");
+        printf("Socket creation error\n");
         exit(EXIT_FAILURE);
     }
 
@@ -110,7 +114,7 @@ int main()
     serv_addr.sin_port = htons(PORT_WEA_SERVER);
     if (inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr) <= 0)
     {
-        printf("Invalid address/ Address not supported \n");
+        printf("Invalid address/ Address not supported\n");
         exit(EXIT_FAILURE);
     }
 
@@ -118,7 +122,7 @@ int main()
     if ((status = connect(*server_wea_ptr, (struct sockaddr *)&serv_addr,
                           sizeof(serv_addr))) < 0)
     {
-        printf("Connection Failed \n");
+        printf("Connection Failed\n");
         exit(EXIT_FAILURE);
     }
 
@@ -151,6 +155,7 @@ int main()
     {
         // Create a new socket for the new client
         connection_socket_ptr = malloc(1);
+        
         // Accept the connection instance
         if ((*connection_socket_ptr = accept(listen_socket, (struct sockaddr *)&address, (socklen_t *)&addrlen)) < 0)
         {
@@ -158,11 +163,12 @@ int main()
             exit(EXIT_FAILURE);
         }
         printf("Connection accepted\n");
-
+        printf("DEBUG: %x\t %d\n", server_hor_ptr, *server_hor_ptr);
         // Create a new thread
         pthread_t thread_id;
         ThreadArgs args = {connection_socket_ptr, server_hor_ptr, server_wea_ptr};
-        if (pthread_create(&thread_id, NULL, connection_handler,(void *)&args) < 0)
+        printf("DEBUG: %x\t %d\n", args.server_hor_ptr, *args.server_hor_ptr);
+        if (pthread_create(&thread_id, NULL, connection_handler, (void *)&args) < 0)
         {
             perror("Thread creation failed");
             exit(EXIT_FAILURE);

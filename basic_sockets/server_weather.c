@@ -32,7 +32,6 @@ char *selectRandomString(char *strings[], int numStrings)
     int randomIndex = rand() % numStrings;
 
     // Return the string corresponding to the random index
-    printf("DEBUG:%s\n", strings[randomIndex]);
     return strings[randomIndex];
 }
 
@@ -41,15 +40,16 @@ void *connection_handler(void *socket_desc)
 {
     int client_socket = *(int *)socket_desc, status, client_fd, valread;
     struct sockaddr_in serv_addr;
-    char *buffer;
+    char *buffer, buffer_client[1024] = {0};
+
+    // Extract message
+    read(client_socket, buffer_client, 1024);
 
     // Generate response, select a random string from the options
     buffer = selectRandomString(options, numOptions);
 
     // Send message to the client
     write(client_socket, buffer, strlen(buffer));
-    printf("WS: Message send to the client.\n");
-    printf("WS: %s\n", buffer);
 
     // close connection to the client
     close(client_socket);
@@ -87,7 +87,7 @@ int main()
         exit(EXIT_FAILURE);
     }
 
-    printf("Server found in PORT %d...\n", PORT);
+    printf("Server is listening in PORT %d\n", PORT);
 
     while (1)
     {
@@ -97,8 +97,6 @@ int main()
             perror("Connection failed");
             exit(EXIT_FAILURE);
         }
-
-        printf("Connection accepted\n");
 
         // Create a new socket for the new client
         new_socket = malloc(1);
@@ -111,8 +109,6 @@ int main()
             perror("Thread creation failed");
             exit(EXIT_FAILURE);
         }
-
-        printf("Handler assigned\n");
     }
 
     return 0;

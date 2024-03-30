@@ -32,7 +32,6 @@ char *selectRandomString(char *strings[], int numStrings)
     int randomIndex = rand() % numStrings;
 
     // Return the string corresponding to the random index
-    printf("DEBUG:%s\n", strings[randomIndex]);
     return strings[randomIndex];
 }
 
@@ -41,15 +40,22 @@ void *connection_handler(void *socket_desc)
 {
     int client_socket = *(int *)socket_desc, status, client_fd, valread;
     struct sockaddr_in serv_addr;
-    char *buffer;
+    char *buffer, buffer_client[1024] = {0};
+
+    // Extract message
+    printf("DEBUG: 4\n");
+    if (read(client_socket, buffer_client, 1024) == 1)
+    {
+        printf("ERROR\n");
+        exit(EXIT_FAILURE);
+    } // THE ERROR IS HERE
+    printf("DEBUG: 5\n");
 
     // Generate response, select a random string from the options
     buffer = selectRandomString(options, numOptions);
 
     // Send message to the client
     write(client_socket, buffer, strlen(buffer));
-    printf("HS: Message send to the client.\n");
-    printf("HS: %s\n", buffer);
 
     // close connection to the client
     close(client_socket);
@@ -63,14 +69,14 @@ int main()
     struct sockaddr_in address;
     int addrlen = sizeof(address);
     numOptions = sizeof(options) / sizeof(options[0]);
-
+    printf("DEBUG: 0\n");
     // Socket creation
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
     {
         perror("Socket creation failed");
         exit(EXIT_FAILURE);
     }
-
+    printf("DEBUG: 0\n");
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
     address.sin_port = htons(PORT);
@@ -79,27 +85,25 @@ int main()
         perror("Bind failed");
         exit(EXIT_FAILURE);
     }
-
+    printf("DEBUG: 0\n");
     // Listen for connections
     if (listen(server_fd, MAX_CONNECTIONS) < 0)
     {
         perror("Listen failed");
         exit(EXIT_FAILURE);
     }
-
-    printf("Server found in PORT %d...\n", PORT);
-
+    printf("DEBUG: 1\n");
+    printf("Server horoscope is listening in PORT %d\n", PORT);
+    printf("DEBUG: 1\n");
     while (1)
     {
         // Accept the connection instance
         if ((client_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen)) < 0)
         {
-            perror("Connection failed");
+            perror("Connection failed\n");
             exit(EXIT_FAILURE);
         }
-
-        printf("Connection accepted\n");
-
+        printf("DEBUG: 2\n");
         // Create a new socket for the new client
         new_socket = malloc(1);
         *new_socket = client_socket;
@@ -111,8 +115,7 @@ int main()
             perror("Thread creation failed");
             exit(EXIT_FAILURE);
         }
-
-        printf("Handler assigned\n");
+        printf("DEBUG: 3\n");
     }
 
     return 0;
