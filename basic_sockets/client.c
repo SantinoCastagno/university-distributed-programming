@@ -84,11 +84,10 @@ int main(int argc, char *argv[])
 
     // Send message to the server
     send(client_fd, buffer_send, strlen(buffer_send), 0);
-    printf("Client: Hello message sent\n");
 
     // Read answer from the server
     valread = read(client_fd, buffer_recv, 1024 - 1);
-    printf("Predictions:\n %s\n", buffer_recv);
+    printf("-------------------------- Predictions --------------------------\n%s-----------------------------------------------------------------\n", buffer_recv);
 
     // closing the connected socket
     close(client_fd);
