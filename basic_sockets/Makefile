@@ -1,9 +1,9 @@
 
 all: 
-	gcc client.c utils.c -o client
-	gcc server_central.c -o server_central
-	gcc server_horoscope.c -o server_horoscope
-	gcc server_weather.c -o server_weather
+	gcc src/client.c src/utils.c -o c
+	gcc src/server_central.c -o sc
+	gcc src/server_horoscope.c -o sh
+	gcc src/server_weather.c -o sw
 
 clean:
-	rm client server_central server_horoscope server_weather
+	rm c sc sh sw

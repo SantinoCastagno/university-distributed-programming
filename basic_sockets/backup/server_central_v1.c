@@ -27,13 +27,15 @@ void *connection_handler(void *args)
     int server_wea_socket = *(int *)thread_args->server_wea_ptr;
     int status, valread;
     struct sockaddr_in serv_addr;
-    char buffer_weather[1024] = {0}, buffer_horoscope[1024] = {0}, buffer_client[1024] = {0}, sign[32], date[12];
+    char buffer_weather[1024] = {0}, buffer_horoscope[1024] = "request", buffer_client[1024] = "request", sign[32], date[12];
 
-    printf("DEBUG: %x\t %d\n", (int *)thread_args->server_hor_ptr, *(int *)thread_args->server_hor_ptr);
-    printf("DEBUG: %d\n", server_hor_socket);
+    printf("D4: %x\t %d\n", (int *)thread_args->server_hor_ptr, *(int *)thread_args->server_hor_ptr);
+    printf("D5: %d\n", server_hor_socket);
 
     // Extract message
     read(client_socket, buffer_client, 1024);
+
+    printf("D6\n");
 
     // Check message receive
     if (sscanf(buffer_client, "%s %s", &sign, &date) != 2)
@@ -42,11 +44,15 @@ void *connection_handler(void *args)
         exit(EXIT_FAILURE);
     }
 
+    printf("D7\n");
+
     // TODO: PROGRAMMING CACHE
 
     // Send message to the other servers
     write(server_hor_socket, buffer_horoscope, strlen(buffer_horoscope));
     write(server_wea_socket, buffer_weather, strlen(buffer_weather));
+
+    printf("D8\n");
 
     // Read answer from the horoscope server
     valread = read(server_hor_socket, buffer_horoscope, 1024 - 1);
@@ -74,7 +80,7 @@ int main()
     struct sockaddr_in address, serv_addr;
     int addrlen = sizeof(address), status;
 
-    printf("DEBUG: %x\t %d\n", server_hor_ptr, *server_hor_ptr);
+    printf("D1: %x\t %d\n", server_hor_ptr, *server_hor_ptr);
     server_hor_ptr = malloc(1);
     server_wea_ptr = malloc(1);
 
@@ -149,7 +155,7 @@ int main()
         exit(EXIT_FAILURE);
     }
 
-    printf("Server found in PORT %d...\n", PORT);
+    printf("Server is listening in PORT %d...\n", PORT);
 
     while (1)
     {
@@ -162,19 +168,17 @@ int main()
             perror("Connection failed");
             exit(EXIT_FAILURE);
         }
-        printf("Connection accepted\n");
-        printf("DEBUG: %x\t %d\n", server_hor_ptr, *server_hor_ptr);
+
+        printf("D2: %x\t %d\n", server_hor_ptr, *server_hor_ptr);
         // Create a new thread
         pthread_t thread_id;
         ThreadArgs args = {connection_socket_ptr, server_hor_ptr, server_wea_ptr};
-        printf("DEBUG: %x\t %d\n", args.server_hor_ptr, *args.server_hor_ptr);
+        printf("D3: %x\t %d\n", args.server_hor_ptr, *args.server_hor_ptr);
         if (pthread_create(&thread_id, NULL, connection_handler, (void *)&args) < 0)
         {
             perror("Thread creation failed");
             exit(EXIT_FAILURE);
         }
-
-        printf("Handler assigned\n");
     }
     free(server_hor_ptr);
     free(server_wea_ptr);

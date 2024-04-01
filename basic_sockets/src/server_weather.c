@@ -6,19 +6,19 @@
 #include <unistd.h>
 #include <pthread.h>
 
-#define PORT 9090
+#define PORT 9091
 #define MAX_CONNECTIONS 5
 
-char *options[] = {"You will embark on an exciting adventure next year.",
-                   "A new opportunity will present itself to you soon.",
-                   "Your hard work will pay off in unexpected ways.",
-                   "A significant change is on the horizon for you.",
-                   "Someone from your past will re-enter your life.",
-                   "You will make a valuable connection that will change your path.",
-                   "Travel will be in your future, leading to new experiences.",
-                   "Your creativity will flourish, leading to exciting projects.",
-                   "An unexpected gift will bring joy to your life.",
-                   "You will find inner peace through self-discovery."};
+char *options[] = {"Sunny with clear skies and warm temperatures.",
+                   "Partly cloudy with a chance of scattered showers in the afternoon.",
+                   "Overcast with intermittent rain throughout the day.",
+                   "Mostly sunny with a light breeze from the northwest.",
+                   "Thunderstorms likely in the evening, with heavy rainfall expected.",
+                   "Foggy conditions in the morning, gradually clearing up by midday.",
+                   "A mix of sun and clouds, with mild temperatures and no precipitation.",
+                   "Windy conditions expected, especially in coastal areas.",
+                   "Freezing rain and icy roads possible, use caution when driving.",
+                   "Clear skies overnight with temperatures dropping below freezing."};
 int numOptions;
 
 // Function to select a random string from an array of strings
@@ -42,23 +42,28 @@ void *connection_handler(void *socket_desc)
     struct sockaddr_in serv_addr;
     char *buffer, buffer_client[1024] = {0};
 
+
+
     // Extract message
-    printf("DEBUG: 4\n");
-    if (read(client_socket, buffer_client, 1024) == 1)
+    if (read(client_socket, buffer_client, 1024) == -1)
     {
         printf("ERROR\n");
         exit(EXIT_FAILURE);
-    } // THE ERROR IS HERE
-    printf("DEBUG: 5\n");
+    }
+    
+    printf("LOG: Handling request.");
+    sleep(10);
 
     // Generate response, select a random string from the options
     buffer = selectRandomString(options, numOptions);
 
     // Send message to the client
     write(client_socket, buffer, strlen(buffer));
+    printf("LOG: Response sent.\n");
 
     // close connection to the client
     close(client_socket);
+    printf("LOG: Connection closed.\n");
     free(socket_desc);
     pthread_exit(NULL);
 }
@@ -69,14 +74,12 @@ int main()
     struct sockaddr_in address;
     int addrlen = sizeof(address);
     numOptions = sizeof(options) / sizeof(options[0]);
-    printf("DEBUG: 0\n");
     // Socket creation
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
     {
         perror("Socket creation failed");
         exit(EXIT_FAILURE);
     }
-    printf("DEBUG: 0\n");
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
     address.sin_port = htons(PORT);
@@ -85,16 +88,13 @@ int main()
         perror("Bind failed");
         exit(EXIT_FAILURE);
     }
-    printf("DEBUG: 0\n");
     // Listen for connections
     if (listen(server_fd, MAX_CONNECTIONS) < 0)
     {
         perror("Listen failed");
         exit(EXIT_FAILURE);
     }
-    printf("DEBUG: 1\n");
-    printf("Server horoscope is listening in PORT %d\n", PORT);
-    printf("DEBUG: 1\n");
+    printf("LOG: Listening in PORT %d.\n", PORT);
     while (1)
     {
         // Accept the connection instance
@@ -103,7 +103,7 @@ int main()
             perror("Connection failed\n");
             exit(EXIT_FAILURE);
         }
-        printf("DEBUG: 2\n");
+        printf("LOG: Conneccion instance accepted.\n");
         // Create a new socket for the new client
         new_socket = malloc(1);
         *new_socket = client_socket;
@@ -115,7 +115,7 @@ int main()
             perror("Thread creation failed");
             exit(EXIT_FAILURE);
         }
-        printf("DEBUG: 3\n");
+        printf("LOG: Handling connection.\n");
     }
 
     return 0;
