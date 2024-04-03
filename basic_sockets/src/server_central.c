@@ -5,6 +5,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <pthread.h>
+#include "dictionary.h"
 
 #define PORT 8080
 #define MAX_CONNECTIONS 10
@@ -83,21 +84,27 @@ void *connection_handler(void *socket_desc)
 
     // TODO: CHECK PARAMS IN CACHE
 
-    // TODO: SEND PARAMS TO THE SERVERS
-    // Send message to the other servers
-    send(client_hs_fd, buffer_horoscope, strlen(buffer_horoscope), 0);
-    send(client_we_fd, buffer_weather, strlen(buffer_weather), 0);
-    printf("LOG: Request sent to horoscope and weather servers.");
+    if(obtener(dic, sign) == ""){
 
-    // Read answer from the horoscope server
-    valread = read(client_hs_fd, buffer_horoscope, 1024 - 1);
+        // TODO: SEND PARAMS TO THE SERVERS
+        // Send message to the other servers
+        send(client_hs_fd, buffer_horoscope, strlen(buffer_horoscope), 0);
+        send(client_we_fd, buffer_weather, strlen(buffer_weather), 0);
+        printf("LOG: Request sent to horoscope and weather servers.");
 
-    // Read answer from the weather server
-    valread = read(client_we_fd, buffer_weather, 1024 - 1);
+        // Read answer from the horoscope server
+        valread = read(client_hs_fd, buffer_horoscope, 1024 - 1);
 
-    // TODO: merge the answer of the servers
-    sprintf(buffer_client, "%s\n%s\n", buffer_horoscope, buffer_weather);
+        // Read answer from the weather server
+        valread = read(client_we_fd, buffer_weather, 1024 - 1);
 
+        insertar(dic, sign, 10);
+
+        // TODO: merge the answer of the servers
+        sprintf(buffer_client, "%s\n%s\n", buffer_horoscope, buffer_weather);
+    }else{
+        obtener(dic, sign);
+    }
     // Send message to the client
     write(client_socket, buffer_client, strlen(buffer_client));
     printf("LOG: Response sent to the client.");
@@ -114,6 +121,7 @@ int main()
     int server_fd, client_socket, *new_socket;
     struct sockaddr_in address;
     int addrlen = sizeof(address);
+    Diccionario* dic = crear_diccionario(100);
 
     // Socket creation
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
@@ -165,6 +173,7 @@ int main()
 
         printf("LOG: Handler assigned\n");
     }
+    liberar_diccionario(dic);
 
     return 0;
 }
