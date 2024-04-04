@@ -1,6 +1,7 @@
 #include "dictionary.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 // Función para crear un nuevo nodo
 Nodo* nuevo_nodo(char* clave, char* valor) {
@@ -55,6 +56,7 @@ char* obtener(Diccionario* dic, char* clave) {
 }
 
 void liberar_diccionario(Diccionario* dic) {
+    printf("DEBUG: ALERT FREE.\n");
     for (int i = 0; i < dic->tamano; i++) {
         Nodo* actual = dic->tabla[i];
         while (actual != NULL) {

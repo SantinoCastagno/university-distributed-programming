@@ -9,6 +9,7 @@
 #include "utils.h"
 
 #define PORT 8080
+
 #define S1 "aries"
 #define S2 "tauro"
 #define S3 "geminis"
@@ -21,6 +22,7 @@
 #define S10 "capricornio"
 #define S11 "acuario"
 #define S12 "piscis"
+#define SIZE_MESSAGE 1024
 
 struct Date
 {
@@ -34,7 +36,7 @@ int main(int argc, char *argv[])
     // Client variables
     int status, valread, client_fd;
     struct sockaddr_in serv_addr;
-    char buffer_send[1024] = {0}, buffer_recv[1024] = {0};
+    char buffer_send[SIZE_MESSAGE] = {0}, buffer_recv[SIZE_MESSAGE] = {0};
     char *token;
     struct Date paramDate;
 
@@ -86,7 +88,7 @@ int main(int argc, char *argv[])
     send(client_fd, buffer_send, strlen(buffer_send), 0);
 
     // Read answer from the server
-    valread = read(client_fd, buffer_recv, 1024 - 1);
+    valread = read(client_fd, buffer_recv, SIZE_MESSAGE - 1);
     printf("-------------------------- Predictions --------------------------\n%s-----------------------------------------------------------------\n", buffer_recv);
 
     // closing the connected socket

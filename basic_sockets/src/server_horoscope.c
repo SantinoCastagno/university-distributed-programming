@@ -8,6 +8,7 @@
 
 #define PORT 9090
 #define MAX_CONNECTIONS 5
+#define SIZE_MESSAGE 1024
 
 char *options[] = {"You will embark on an exciting adventure next year.",
                    "A new opportunity will present itself to you soon.",
@@ -40,19 +41,19 @@ void *connection_handler(void *socket_desc)
 {
     int client_socket = *(int *)socket_desc, status, client_fd, valread;
     struct sockaddr_in serv_addr;
-    char *buffer, buffer_client[1024] = {0};
+    char *buffer, buffer_client[SIZE_MESSAGE] = {0};
 
     
 
     // Extract message
-    if (read(client_socket, buffer_client, 1024) == -1)
+    if (read(client_socket, buffer_client, SIZE_MESSAGE) == -1)
     {
         printf("ERROR\n");
         exit(EXIT_FAILURE);
     } 
     
-    printf("LOG: Handling request.");
-    sleep(10);
+    printf("LOG: Handling request.\n");
+    sleep(6);
 
     // Generate response, select a random string from the options
     buffer = selectRandomString(options, numOptions);
