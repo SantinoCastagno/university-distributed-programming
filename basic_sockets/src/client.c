@@ -1,35 +1,15 @@
-#include <arpa/inet.h>
-#include <sys/socket.h>
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 
+#include <arpa/inet.h>
+#include <sys/socket.h>
+
 #include "utils.h"
 
 #define PORT 8080
-
-#define S1 "aries"
-#define S2 "tauro"
-#define S3 "geminis"
-#define S4 "cancer"
-#define S5 "leo"
-#define S6 "virgo"
-#define S7 "libra"
-#define S8 "escorpio"
-#define S9 "sagitario"
-#define S10 "capricornio"
-#define S11 "acuario"
-#define S12 "piscis"
 #define SIZE_MESSAGE 1024
-
-struct Date
-{
-    int year;
-    int month;
-    int day;
-};
 
 int main(int argc, char *argv[])
 {

@@ -43,15 +43,13 @@ void *connection_handler(void *socket_desc)
     struct sockaddr_in serv_addr;
     char *buffer, buffer_client[SIZE_MESSAGE] = {0};
 
-    
-
     // Extract message
     if (read(client_socket, buffer_client, SIZE_MESSAGE) == -1)
     {
         printf("ERROR\n");
         exit(EXIT_FAILURE);
-    } 
-    
+    }
+
     printf("LOG: Handling request.\n");
     sleep(6);
 

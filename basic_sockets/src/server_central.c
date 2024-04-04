@@ -2,11 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
 #include <pthread.h>
 #include <semaphore.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
 
+#include "utils.h"
 #include "dictionary.h"
 
 #define PORT 8080
@@ -16,6 +17,7 @@
 
 #define SIZE_MESSAGE 1024
 #define SIZE_DICTIONARY 100
+#define MESSAGE_ERROR "ERROR: incorrect request format\n"
 
 sem_t dic_mutex;
 
@@ -36,6 +38,7 @@ void *connection_handler(void *args)
     ThreadArgs *thread_args = (ThreadArgs *)args;
     int *client_socket = (int *)thread_args->client_socket_ptr;
     Diccionario *dic = (Diccionario *)thread_args->dic;
+    struct Date message_date;
 
     // Extract message
     read(*client_socket, buffer_client, SIZE_MESSAGE);
@@ -46,9 +49,25 @@ void *connection_handler(void *args)
     // Check message receive
     if (sscanf(buffer_client, "%s %s", &sign, &date) != 2)
     {
-        printf("Error: incorrect format of the date.\n");
-        exit(EXIT_FAILURE);
+        printf("Error: incorrect format of the message.\n");
+        write(*client_socket, MESSAGE_ERROR, strlen(MESSAGE_ERROR));
+        close(*client_socket);
+        free(client_socket);
+        pthread_exit(NULL);
     }
+
+    // Check zodiac sign
+    if (strcmp(sign, S1) != 0 && strcmp(sign, S2) != 0 && strcmp(sign, S3) != 0 && strcmp(sign, S4) != 0 && strcmp(sign, S5) != 0 && strcmp(sign, S6) != 0 && strcmp(sign, S7) != 0 && strcmp(sign, S8) != 0 && strcmp(sign, S9) != 0 && strcmp(sign, S10) != 0 && strcmp(sign, S11) != 0 && strcmp(sign, S12) != 0)
+    {
+        printf("Error: incorrect zodiac sign name.\n");
+        write(*client_socket, MESSAGE_ERROR, strlen(MESSAGE_ERROR));
+        close(*client_socket);
+        free(client_socket);
+        pthread_exit(NULL);
+    }
+
+    // Get and check date
+    message_date = stringToDate(date);
 
     // TODO: CHECK PARAMS IN CACHE
     sem_wait(&dic_mutex);
@@ -128,7 +147,7 @@ void *connection_handler(void *args)
         // Read answer from eather server
         valread = read(client_we_fd, buffer_weather, SIZE_MESSAGE - 1);
         sem_wait(&dic_mutex);
-        printf("LOG: Insertando clima en el diccionario.\t%lu\n", pthread_self());
+        printf("DEBUG: inserting weather in the cache.\t%lu\n", pthread_self());
         sleep(20);
         insertar(dic, date, buffer_weather);
         sem_post(&dic_mutex);
@@ -196,7 +215,6 @@ int main()
         // Create thread id and setting params
         pthread_t thread_id;
         ThreadArgs args = {client_socket, dic};
-        printf("DEBUG: client_socket_ptr: \t%x \t%d\n", client_socket, *client_socket);
         if (pthread_create(&thread_id, NULL, connection_handler, (void *)&args) < 0)
         {
             perror("Thread creation failed");
