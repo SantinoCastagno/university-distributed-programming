@@ -3,69 +3,69 @@
 #include <string.h>
 #include <stdio.h>
 
-// Función para crear un nuevo nodo
-Nodo* nuevo_nodo(char* clave, char* valor) {
-    Nodo* nodo = malloc(sizeof(Nodo));
-    nodo->clave = strdup(clave);
-    nodo->valor = valor;
-    nodo->siguiente = NULL;
-    return nodo;
+// Función para crear un nuevo node
+Node* create_node(char* key, char* value) {
+    Node* node = malloc(sizeof(Node));
+    node->key = strdup(key);
+    node->value = value;
+    node->next = NULL;
+    return node;
 }
-Diccionario* crear_diccionario(int tamano) {
-    Diccionario* dic = malloc(sizeof(Diccionario));
-    dic->tabla = malloc(tamano * sizeof(Nodo*));
-    dic->tamano = tamano;
-    for (int i = 0; i < tamano; i++) {
-        dic->tabla[i] = NULL;
+Dictionary* create_dictionary(int size) {
+    Dictionary* dic = malloc(sizeof(Dictionary));
+    dic->table = malloc(size * sizeof(Node*));
+    dic->size = size;
+    for (int i = 0; i < size; i++) {
+        dic->table[i] = NULL;
     }
     return dic;
 }
 // Función de hash
-unsigned int hash(char* clave, int tamano) {
+unsigned int hash(char* key, int size) {
     unsigned int hash = 0;
-    for (int i = 0; clave[i] != '\0'; i++) {
-        hash = hash * 31 + clave[i];
+    for (int i = 0; key[i] != '\0'; i++) {
+        hash = hash * 31 + key[i];
     }
-    return hash % tamano;
+    return hash % size;
 }
 
-void insertar(Diccionario* dic, char* clave, char* valor) {
-    unsigned int indice = hash(clave, dic->tamano);
-    Nodo* nodo_actual = dic->tabla[indice];
-    Nodo* nodo_nuevo = nuevo_nodo(clave, valor);
-    if (nodo_actual == NULL) {
-        dic->tabla[indice] = nodo_nuevo;
+void insert(Dictionary* dic, char* key, char* value) {
+    unsigned int index = hash(key, dic->size);
+    Node* actual_node = dic->table[index];
+    Node* new_node = create_node(key, value);
+    if (actual_node == NULL) {
+        dic->table[index] = new_node;
     } else {
-        while (nodo_actual->siguiente != NULL) {
-            nodo_actual = nodo_actual->siguiente;
+        while (actual_node->next != NULL) {
+            actual_node = actual_node->next;
         }
-        nodo_actual->siguiente = nodo_nuevo;
+        actual_node->next = new_node;
     }
 }
 
-char* obtener(Diccionario* dic, char* clave) {
-    unsigned int indice = hash(clave, dic->tamano);
-    Nodo* nodo_actual = dic->tabla[indice];
-    while (nodo_actual != NULL) {
-        if (strcmp(nodo_actual->clave, clave) == 0) {
-            return nodo_actual->valor;
+char* get(Dictionary* dic, char* key) {
+    unsigned int index = hash(key, dic->size);
+    Node* actual_node = dic->table[index];
+    while (actual_node != NULL) {
+        if (strcmp(actual_node->key, key) == 0) {
+            return actual_node->value;
         }
-        nodo_actual = nodo_actual->siguiente;
+        actual_node = actual_node->next;
     }
-    return ""; // Clave no encontrada
+    return ""; // key no encontrada
 }
 
-void liberar_diccionario(Diccionario* dic) {
+void free_dictionary(Dictionary* dic) {
     printf("DEBUG: ALERT FREE.\n");
-    for (int i = 0; i < dic->tamano; i++) {
-        Nodo* actual = dic->tabla[i];
+    for (int i = 0; i < dic->size; i++) {
+        Node* actual = dic->table[i];
         while (actual != NULL) {
-            Nodo* temp = actual;
-            actual = actual->siguiente;
-            free(temp->clave);
+            Node* temp = actual;
+            actual = actual->next;
+            free(temp->key);
             free(temp);
         }
     }
-    free(dic->tabla);
+    free(dic->table);
     free(dic);
 }

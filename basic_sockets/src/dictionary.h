@@ -2,23 +2,23 @@
 #define DICTIONARY_H_
 
 /* Estructura para un nodo de la tabla hash */
-typedef struct Nodo {
-    char* clave;
-    char* valor;
-    struct Nodo* siguiente;
-} Nodo;
+typedef struct Node {
+    char* key;
+    char* value;
+    struct Node* next;
+} Node;
 
 // Estructura para la tabla hash (Diccionario)
 typedef struct {
-    Nodo** tabla;
-    int tamano;
-} Diccionario;
+    Node** table;
+    int size;
+} Dictionary;
 
 // Funciones para el diccionario
-Diccionario* crear_diccionario(int tamano);
-void insertar(Diccionario* dic, char* clave, char* valor);
-char* obtener(Diccionario* dic, char* clave);
-void liberar_diccionario(Diccionario* dic);
+Dictionary* create_dictionary(int size);
+void insert(Dictionary* dic, char* key, char* value);
+char* get(Dictionary* dic, char* key);
+void free_dictionary(Dictionary* dic);
 
 
 #endif // DICTIONARY_H_

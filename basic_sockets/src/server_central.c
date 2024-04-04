@@ -24,7 +24,7 @@ sem_t dic_mutex;
 typedef struct
 {
     int *client_socket_ptr;
-    Diccionario *dic;
+    Dictionary *dic;
 } ThreadArgs;
 
 // function executed for each thread
@@ -37,7 +37,7 @@ void *connection_handler(void *args)
     // args init
     ThreadArgs *thread_args = (ThreadArgs *)args;
     int *client_socket = (int *)thread_args->client_socket_ptr;
-    Diccionario *dic = (Diccionario *)thread_args->dic;
+    Dictionary *dic = (Dictionary *)thread_args->dic;
     struct Date message_date;
 
     // Extract message
@@ -71,8 +71,8 @@ void *connection_handler(void *args)
 
     // TODO: CHECK PARAMS IN CACHE
     sem_wait(&dic_mutex);
-    strcpy(value_sign, obtener(dic, sign));
-    strcpy(value_date, obtener(dic, date));
+    strcpy(value_sign, get(dic, sign));
+    strcpy(value_date, get(dic, date));
     sem_post(&dic_mutex);
 
     if (strcmp(value_sign, "") == 0)
@@ -107,7 +107,7 @@ void *connection_handler(void *args)
         // Read answer from horoscope server
         valread = read(client_hs_fd, buffer_horoscope, SIZE_MESSAGE - 1);
         sem_wait(&dic_mutex);
-        insertar(dic, sign, buffer_horoscope);
+        insert(dic, sign, buffer_horoscope);
         sem_post(&dic_mutex);
     }
     else
@@ -149,7 +149,7 @@ void *connection_handler(void *args)
         sem_wait(&dic_mutex);
         printf("DEBUG: inserting weather in the cache.\t%lu\n", pthread_self());
         sleep(20);
-        insertar(dic, date, buffer_weather);
+        insert(dic, date, buffer_weather);
         sem_post(&dic_mutex);
     }
     else
@@ -173,7 +173,7 @@ int main()
     int server_fd;
     struct sockaddr_in address;
     int addrlen = sizeof(address);
-    Diccionario *dic = crear_diccionario(SIZE_DICTIONARY);
+    Dictionary *dic = create_dictionary(SIZE_DICTIONARY);
     int *client_socket;
     sem_init(&dic_mutex, 0, 1);
 
@@ -223,7 +223,7 @@ int main()
 
         printf("LOG: Handler assigned\n");
     }
-    liberar_diccionario(dic);
+    free_dictionary(dic);
 
     return 0;
 }
