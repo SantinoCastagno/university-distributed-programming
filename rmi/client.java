@@ -1,4 +1,4 @@
-package TP2;
+package rmi;
 
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -9,28 +9,25 @@ import java.util.Scanner;
  */
 public class client {
 
-  public static String sign = "", date = "", entry = "";
+  public static String entry = "";
 
   public static void main(String[] args) {
+    String[] predictions = new String[2];
 
     try {
 
-      Registry myRegistry = LocateRegistry.getRegistry("127.0.0.1", 1234);
+      Registry myRegistry = LocateRegistry.getRegistry("127.0.0.1", 8080);
       server centralServer = (server) myRegistry.lookup("centralServer");
 
       Scanner scanner = new Scanner(System.in);
 
-      System.out.print("Enter the sign: ");
+      System.out.print("Enter the sign and date: ");
 
-      sign = scanner.nextLine();
+      entry = scanner.nextLine();
 
-      System.out.print("Enter the date: ");
+      predictions = centralServer.consult(entry);
 
-      date = scanner.nextLine();
-
-      System.out.println(sign + " " + date);
-
-      System.out.println(centralServer.consult("increible"));
+      System.out.println(predictions[0] + "\n" + predictions[1]);
 
       scanner.close();
 

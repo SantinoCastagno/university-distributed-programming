@@ -1,9 +1,9 @@
-package TP2;
+package rmi;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 public interface server extends java.rmi.Remote {
-    public String consult(String entry) throws RemoteException;
+    public String[] consult(String entry) throws RemoteException;
 
 }
