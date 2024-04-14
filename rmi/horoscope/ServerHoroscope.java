@@ -1,4 +1,4 @@
-package rmi;
+package rmi.horoscope;
 
 import java.rmi.server.UnicastRemoteObject;
 import java.rmi.RemoteException;
@@ -6,7 +6,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.Random;
 
-public class serverHoroscope extends UnicastRemoteObject implements horoscopeInterface {
+public class ServerHoroscope extends UnicastRemoteObject implements HoroscopeInterface {
 
   private static String[] options = { "You will embark on an exciting adventure next year.",
       "A new opportunity will present itself to you soon.",
@@ -21,7 +21,7 @@ public class serverHoroscope extends UnicastRemoteObject implements horoscopeInt
 
   private static Random random = new Random();
 
-  public serverHoroscope() throws RemoteException {
+  public ServerHoroscope() throws RemoteException {
     super();
   }
 
@@ -37,7 +37,7 @@ public class serverHoroscope extends UnicastRemoteObject implements horoscopeInt
   public static void main(String[] args) {
     try {
       Registry myRegistry = LocateRegistry.createRegistry(9091);
-      myRegistry.rebind("serverHoroscope", new serverHoroscope());
+      myRegistry.rebind("ServerHoroscope", new ServerHoroscope());
       System.out.println("Horoscope server ON");
 
     } catch (Exception e) {

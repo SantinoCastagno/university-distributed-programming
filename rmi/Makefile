@@ -1,6 +1,8 @@
 
 all:
-    javac *.java
+	javac central/*.java
+	javac client/*.java
 
 clean:
-	rm *.class
+	rm central/*.class
+	rm client/*.class

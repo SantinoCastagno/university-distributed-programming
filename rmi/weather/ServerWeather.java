@@ -1,4 +1,4 @@
-package rmi;
+package rmi.weather;
 
 import java.rmi.server.UnicastRemoteObject;
 import java.rmi.RemoteException;
@@ -6,7 +6,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.Random;
 
-public class serverWeather extends UnicastRemoteObject implements weatherInterface {
+public class ServerWeather extends UnicastRemoteObject implements WeatherInterface {
 
   private static String[] options = { "Sunny with clear skies and warm temperatures.",
       "Partly cloudy with a chance of scattered showers in the afternoon.",
@@ -21,12 +21,12 @@ public class serverWeather extends UnicastRemoteObject implements weatherInterfa
 
   private static Random random = new Random();
 
-  public serverWeather() throws RemoteException {
+  public ServerWeather() throws RemoteException {
     super();
   }
 
   @Override
-  public String consultWeather(String entry) {
+  public String ConsultWeather(String entry) {
     int numOption = random.nextInt(options.length);
 
     String weather = options[numOption];
@@ -37,7 +37,7 @@ public class serverWeather extends UnicastRemoteObject implements weatherInterfa
   public static void main(String[] args) {
     try {
       Registry myRegistry = LocateRegistry.createRegistry(9090);
-      myRegistry.rebind("serverWeather", new serverWeather());
+      myRegistry.rebind("serverWeather", new ServerWeather());
       System.out.println("server weather ON");
 
     } catch (Exception e) {
