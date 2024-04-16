@@ -7,20 +7,22 @@ all:
 
 # Run the horoscope object
 horoscope_object:
-	java rmi.horoscope.ServerHoroscope
+	java rmi.horoscope.HoroscopeObject
 
 # Run the weather object
 weather_object:
-	java rmi.weather.ServerWeather
+	java rmi.weather.WeatherObject
 
 # Run the central object
 central_object:
-	java rmi.central.ObjectCentral
+	java rmi.central.CentralObject
 
 # Run the client
-client:	
-	java rmi.client.Client
+client_object:	
+	java rmi.client.ClientObject
 
 clean:
+	rm rmi/weather/*.class
+	rm rmi/horoscope/*.class
 	rm rmi/central/*.class
 	rm rmi/client/*.class

@@ -2,13 +2,12 @@ package rmi.client;
 
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-
-import rmi.central.RequestInterface;
+import rmi.central.CentralInterface;
 
 /**
  * Client
  */
-public class Client {
+public class ClientObject {
 
   public static String entry = "";
 
@@ -17,7 +16,7 @@ public class Client {
     try {
 
       Registry myRegistry = LocateRegistry.getRegistry("127.0.0.1", 8080);
-      RequestInterface centralServer = (RequestInterface) myRegistry.lookup("ObjectCentral");
+      CentralInterface centralServer = (CentralInterface) myRegistry.lookup("CentralObject");
 
       // Scanner scanner = new Scanner(System.in);
 
@@ -25,7 +24,7 @@ public class Client {
 
       // entry = scanner.nextLine();
 
-      predictions = centralServer.request("horosocpo clima");
+      predictions = centralServer.requestCentral("horosocpo clima");
 
       System.out.println("Client LOG: \n -> " + predictions[0] + "\n -> " + predictions[1]);
 
