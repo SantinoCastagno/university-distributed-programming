@@ -37,8 +37,8 @@ public class ServerWeather extends UnicastRemoteObject implements WeatherInterfa
   public static void main(String[] args) {
     try {
       Registry myRegistry = LocateRegistry.createRegistry(9090);
-      myRegistry.rebind("serverWeather", new ServerWeather());
-      System.out.println("server weather ON");
+      myRegistry.rebind("ServerWeather", new ServerWeather());
+      System.out.println("LOG: Weather Server ON!");
 
     } catch (Exception e) {
       System.err.println("Error in server weather: " + e.getMessage());

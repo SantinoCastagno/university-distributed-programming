@@ -27,7 +27,7 @@ public class Client {
 
       predictions = centralServer.request("horosocpo clima");
 
-      System.out.println("Client LOG: Received -> " + predictions[0] + "\n" + predictions[1]);
+      System.out.println("Client LOG: \n -> " + predictions[0] + "\n -> " + predictions[1]);
 
       // scanner.close();
 

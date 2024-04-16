@@ -38,7 +38,7 @@ public class ServerHoroscope extends UnicastRemoteObject implements HoroscopeInt
     try {
       Registry myRegistry = LocateRegistry.createRegistry(9091);
       myRegistry.rebind("ServerHoroscope", new ServerHoroscope());
-      System.out.println("Horoscope server ON");
+      System.out.println("LOG: Horoscope server ON!");
 
     } catch (Exception e) {
       System.err.println("Error in horoscope: " + e.getMessage());
