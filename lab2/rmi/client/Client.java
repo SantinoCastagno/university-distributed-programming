@@ -14,7 +14,6 @@ public class Client {
 
   public static void main(String[] args) {
     String[] predictions = new String[2];
-
     try {
 
       Registry myRegistry = LocateRegistry.getRegistry("127.0.0.1", 8080);
@@ -26,9 +25,9 @@ public class Client {
 
       // entry = scanner.nextLine();
 
-      predictions = centralServer.request("horo clima");
+      predictions = centralServer.request("horosocpo clima");
 
-      System.out.println(predictions[0] + "\n" + predictions[1]);
+      System.out.println("Client LOG: Received -> " + predictions[0] + "\n" + predictions[1]);
 
       // scanner.close();
 

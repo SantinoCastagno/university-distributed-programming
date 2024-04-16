@@ -1,4 +1,4 @@
-package rmi.central;
+package rmi.client;
 
 import java.rmi.*;
 

@@ -1,4 +1,4 @@
-package rmi;
+package rmi.weather;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;

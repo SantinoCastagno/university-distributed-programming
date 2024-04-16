@@ -26,7 +26,7 @@ public class ServerWeather extends UnicastRemoteObject implements WeatherInterfa
   }
 
   @Override
-  public String ConsultWeather(String entry) {
+  public String consultWeather(String entry) {
     int numOption = random.nextInt(options.length);
 
     String weather = options[numOption];
