@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.rmi.server.UnicastRemoteObject;
 import java.rmi.RemoteException;
+import java.util.concurrent.Semaphore;
 import java.rmi.registry.*;
 import rmi.weather.*;
 import rmi.horoscope.*;
@@ -11,6 +12,8 @@ import rmi.horoscope.*;
 public class CentralObject extends UnicastRemoteObject implements CentralInterface {
 
 	private static Map<String, String> cache = new HashMap<>();
+	private static Semaphore semaphoreHoroscope = new Semaphore(1);
+	private static Semaphore semaphoreWeather = new Semaphore(1);
 
 	public CentralObject() throws RemoteException {
 		super();
@@ -27,6 +30,7 @@ public class CentralObject extends UnicastRemoteObject implements CentralInterfa
 			Registry myRegistryHoroscope = LocateRegistry.getRegistry("127.0.0.1", 9091);
 			HoroscopeInterface server_horoscope = (HoroscopeInterface) myRegistryHoroscope.lookup("HoroscopeObject");
 
+			semaphoreHoroscope.acquire();
 			if (cache.get(entrys[0]) == null) {
 				horoscope = server_horoscope.requestHoroscope(entrys[0]);
 				predictions[0] = horoscope;
@@ -34,7 +38,9 @@ public class CentralObject extends UnicastRemoteObject implements CentralInterfa
 			} else {
 				predictions[0] = cache.get(entrys[0]);
 			}
+			semaphoreHoroscope.release();
 
+			semaphoreWeather.acquire();
 			if (cache.get(entrys[1]) == null) {
 				weather = server_weather.requestWeather(entrys[1]);
 				predictions[1] = weather;
@@ -43,8 +49,7 @@ public class CentralObject extends UnicastRemoteObject implements CentralInterfa
 				predictions[1] = cache.get(entrys[1]);
 			}
 
-			// predictions[0] = server_weather.requestWeather(entrys[0]);
-			// predictions[1] = server_horoscope.requestHoroscope(entrys[1]);
+			semaphoreWeather.release();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -11,12 +11,10 @@ import java.util.Random;
  */
 public class ClientObject {
 
-  // private static String entry = "";
   private static String[] signs = { "aries", "tauro", "geminis", "cancer", "leo", "virgo", "libra", "escorpio",
       "sagitario",
       "capricornio", "acuario", "piscis" };
   private static Random random = new Random();
-  // private static String[] predictions = new String[2];
 
   public static void main(String[] args) {
     try {
@@ -24,11 +22,6 @@ public class ClientObject {
       Registry myRegistry = LocateRegistry.getRegistry("127.0.0.1", 8080);
       CentralInterface centralServer = (CentralInterface) myRegistry.lookup("CentralObject");
 
-      // Scanner scanner = new Scanner(System.in);
-
-      // System.out.print("Enter the sign and date: ");
-
-      // entry = scanner.nextLine();
       for (int i = 0; i < 5; i++) {
         Thread clienteThread = new Thread(() -> {
 
@@ -50,6 +43,7 @@ public class ClientObject {
 
             entry = sign + " " + date;
 
+            Thread.sleep(30);
             predictions = centralServer.requestCentral(entry);
 
             System.out.println("Thread: "
@@ -62,12 +56,6 @@ public class ClientObject {
         });
         clienteThread.start();
       }
-      // predictions = centralServe.requestCentral("horosocpo clima");
-
-      // System.out.println("Client LOG: \n -> " + predictions[0] + "\n -> " +
-      // predictions[1]);
-
-      // scanner.close();
 
     } catch (Exception e) {
       e.printStackTrace();
