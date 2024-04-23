@@ -16,13 +16,15 @@ public class ClientObject {
       "capricornio", "acuario", "piscis" };
   private static Random random = new Random();
 
+  private static final int THREADS = 5;
+
   public static void main(String[] args) {
     try {
 
       Registry myRegistry = LocateRegistry.getRegistry("127.0.0.1", 8080);
       CentralInterface centralServer = (CentralInterface) myRegistry.lookup("CentralObject");
 
-      for (int i = 0; i < 5; i++) {
+      for (int i = 0; i < THREADS; i++) {
         Thread clienteThread = new Thread(() -> {
 
           String[] predictions = new String[2];
@@ -31,7 +33,8 @@ public class ClientObject {
 
           try {
 
-            System.out.println("Thread: " + Thread.currentThread().getId() + " consulting");
+            // System.out.println("Thread: " + Thread.currentThread().getId() + "
+            // consulting");
 
             numOption = random.nextInt(signs.length);
 
@@ -39,7 +42,8 @@ public class ClientObject {
 
             date = (random.nextInt(30) + 1) + "-" + (random.nextInt(12) + 1) + "-2024";
 
-            System.out.println("Thread: " + Thread.currentThread().getId() + " sign: " + sign + " date: " + date);
+            // System.out.println("Thread: " + Thread.currentThread().getId() + " sign: " +
+            // sign + " date: " + date);
 
             entry = sign + " " + date;
 
@@ -47,7 +51,8 @@ public class ClientObject {
             predictions = centralServer.requestCentral(entry);
 
             System.out.println("Thread: "
-                + Thread.currentThread().getId() + " Client LOG: \n -> " + predictions[0] + "\n -> " + predictions[1]);
+                + Thread.currentThread().getId() + " Client LOG: \n -> " + sign + ": " + predictions[0] + "\n -> "
+                + date + ": " + predictions[1]);
 
           } catch (Exception e) {
             System.err.println("Client error: " + e.toString());
