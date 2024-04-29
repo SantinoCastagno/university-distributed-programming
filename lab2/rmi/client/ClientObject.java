@@ -32,18 +32,11 @@ public class ClientObject {
           String sign, date, entry;
 
           try {
-
-            // System.out.println("Thread: " + Thread.currentThread().getId() + "
-            // consulting");
-
-            numOption = random.nextInt(signs.length);
+            numOption = random.nextInt(2);
 
             sign = signs[numOption];
 
             date = (random.nextInt(30) + 1) + "-" + (random.nextInt(12) + 1) + "-2024";
-
-            // System.out.println("Thread: " + Thread.currentThread().getId() + " sign: " +
-            // sign + " date: " + date);
 
             entry = sign + " " + date;
 
@@ -60,6 +53,7 @@ public class ClientObject {
           }
         });
         clienteThread.start();
+        Thread.sleep(random.nextInt(300));
       }
 
     } catch (Exception e) {

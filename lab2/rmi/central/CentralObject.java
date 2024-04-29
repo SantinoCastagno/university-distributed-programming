@@ -22,6 +22,7 @@ public class CentralObject extends UnicastRemoteObject implements CentralInterfa
 	public String[] requestCentral(String entry) {
 		String weather = "", horoscope = "";
 		String[] entrys = entry.split(" "), predictions = new String[2];
+		String cache_aux_1, cache_aux_2;
 
 		try {
 			Registry myRegistryWeather = LocateRegistry.getRegistry("127.0.0.1", 9090);
@@ -31,25 +32,35 @@ public class CentralObject extends UnicastRemoteObject implements CentralInterfa
 			HoroscopeInterface server_horoscope = (HoroscopeInterface) myRegistryHoroscope.lookup("HoroscopeObject");
 
 			semaphoreHoroscope.acquire();
-			if (cache.get(entrys[0]) == null) {
-				horoscope = server_horoscope.requestHoroscope(entrys[0]);
-				predictions[0] = horoscope;
-				cache.put(entrys[0], horoscope);
-			} else {
-				predictions[0] = cache.get(entrys[0]);
-			}
+			cache_aux_1 = cache.get(entrys[0]);
 			semaphoreHoroscope.release();
 
-			semaphoreWeather.acquire();
-			if (cache.get(entrys[1]) == null) {
-				weather = server_weather.requestWeather(entrys[1]);
-				predictions[1] = weather;
-				cache.put(entrys[1], weather);
+			if (cache_aux_1 == null) {
+				horoscope = server_horoscope.requestHoroscope(entrys[0]);
+				predictions[0] = horoscope;
+				semaphoreHoroscope.acquire();
+				cache.put(entrys[0], horoscope);
+				semaphoreHoroscope.release();
 			} else {
-				predictions[1] = cache.get(entrys[1]);
+				semaphoreHoroscope.acquire();
+				predictions[0] = cache_aux_1;
+				semaphoreHoroscope.release();
 			}
 
+			semaphoreWeather.acquire();
+			cache_aux_2 = cache.get(entrys[1]);
 			semaphoreWeather.release();
+			if (cache_aux_2 == null) {
+				weather = server_weather.requestWeather(entrys[1]);
+				predictions[1] = weather;
+				semaphoreWeather.acquire();
+				cache.put(cache_aux_2, weather);
+				semaphoreWeather.release();
+			} else {
+				semaphoreWeather.acquire();
+				predictions[1] = cache.get(entrys[1]);
+				semaphoreWeather.release();
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
