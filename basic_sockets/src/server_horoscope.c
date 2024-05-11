@@ -6,8 +6,8 @@
 #include <unistd.h>
 #include <pthread.h>
 
-#define PORT 9090
 #define MAX_CONNECTIONS 5
+#define MAX_LINE_LENGTH 100
 #define SIZE_MESSAGE 1024
 
 char *options[] = {"You will embark on an exciting adventure next year.",
@@ -34,6 +34,46 @@ char *selectRandomString(char *strings[], int numStrings)
 
     // Return the string corresponding to the random index
     return strings[randomIndex];
+}
+
+int set_env_vars()
+{
+    FILE *archivo;
+    char linea[MAX_LINE_LENGTH];
+    char *variable, *valor;
+
+    // Abrir el archivo
+    archivo = fopen("../env/env_server_horoscope.txt", "r");
+    if (archivo == NULL)
+    {
+        perror("Error al abrir el archivo");
+        return 1;
+    }
+
+    // Leer el archivo línea por línea
+    while (fgets(linea, MAX_LINE_LENGTH, archivo) != NULL)
+    {
+        // Eliminar el salto de línea al final de la línea (si existe)
+        linea[strcspn(linea, "\n")] = '\0';
+
+        // Dividir la línea en variable y valor usando el signo '=' como delimitador
+        variable = strtok(linea, "=");
+        valor = strtok(NULL, "=");
+
+        // Establecer la variable de entorno
+        if (variable != NULL && valor != NULL)
+        {
+            if (setenv(variable, valor, 1) != 0)
+            {
+                perror("Error al establecer la variable de entorno");
+                fclose(archivo);
+                return 1;
+            }
+        }
+    }
+    // Cerrar el archivo
+    fclose(archivo);
+    return 0;
 }
 
 // function executed for each thread
@@ -73,6 +113,13 @@ int main()
     struct sockaddr_in address;
     int addrlen = sizeof(address);
     numOptions = sizeof(options) / sizeof(options[0]);
+
+    if (set_env_vars())
+    {
+        printf("Error: enviroment vars dont setted correctly.\n");
+        exit(EXIT_FAILURE);
+    }
+
     // Socket creation
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
     {
@@ -81,7 +128,7 @@ int main()
     }
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port = htons(PORT);
+    address.sin_port = htons(atoi(getenv("PORT")));
     if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0)
     {
         perror("Bind failed");
@@ -93,7 +140,7 @@ int main()
         perror("Listen failed");
         exit(EXIT_FAILURE);
     }
-    printf("LOG: Listening in PORT %d.\n", PORT);
+    printf("LOG: Listening in PORT %d.\n", atoi(getenv("PORT")));
     while (1)
     {
         // Accept the connection instance

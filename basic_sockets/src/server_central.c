@@ -10,11 +10,8 @@
 #include "utils.h"
 #include "dictionary.h"
 
-#define PORT 8080
+#define MAX_LINE_LENGTH 100
 #define MAX_CONNECTIONS 10
-#define PORT_HOR_SERVER 9090
-#define PORT_WEA_SERVER 9091
-
 #define SIZE_MESSAGE 1024
 #define SIZE_DICTIONARY 100
 #define MESSAGE_ERROR "ERROR: incorrect request format\n"
@@ -26,6 +23,47 @@ typedef struct
     int *client_socket_ptr;
     Dictionary *dic;
 } ThreadArgs;
+
+int set_env_vars()
+{
+    FILE *archivo;
+    char linea[MAX_LINE_LENGTH];
+    char *variable, *valor;
+
+    // Abrir el archivo
+    archivo = fopen("../env/env_server_central.txt", "r");
+    if (archivo == NULL)
+    {
+        perror("Error al abrir el archivo");
+        return 1;
+    }
+    printf("DEBUG1\n");
+    // Leer el archivo línea por línea
+    while (fgets(linea, MAX_LINE_LENGTH, archivo) != NULL)
+    {
+        // Eliminar el salto de línea al final de la línea (si existe)
+        linea[strcspn(linea, "\n")] = '\0';
+
+        // Dividir la línea en variable y valor usando el signo '=' como delimitador
+        variable = strtok(linea, "=");
+        valor = strtok(NULL, "=");
+
+        // Establecer la variable de entorno
+        if (variable != NULL && valor != NULL)
+        {
+            if (setenv(variable, valor, 1) != 0)
+            {
+                perror("Error al establecer la variable de entorno");
+                fclose(archivo);
+                return 1;
+            }
+        }
+    }
+    printf("DEBUG2\n");
+    // Cerrar el archivo
+    fclose(archivo);
+    return 0;
+}
 
 // function executed for each thread
 void *connection_handler(void *args)
@@ -86,8 +124,8 @@ void *connection_handler(void *args)
 
         // Configure horoscope server params
         serv_addr.sin_family = AF_INET;
-        serv_addr.sin_port = htons(PORT_HOR_SERVER);
-        if (inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr) <= 0)
+        serv_addr.sin_port = htons(atoi(getenv("PORT_HOR_SERVER")));
+        if (inet_pton(AF_INET, getenv("IP"), &serv_addr.sin_addr) <= 0)
         {
             perror("Invalid address/ Address not supported\n");
             exit(EXIT_FAILURE);
@@ -126,8 +164,8 @@ void *connection_handler(void *args)
 
         // Configure weather server params
         serv_addr.sin_family = AF_INET;
-        serv_addr.sin_port = htons(PORT_WEA_SERVER);
-        if (inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr) <= 0)
+        serv_addr.sin_port = htons(atoi(getenv("PORT_WEA_SERVER")));
+        if (inet_pton(AF_INET, getenv("IP"), &serv_addr.sin_addr) <= 0)
         {
             perror("Invalid address/ Address not supported\n");
             exit(EXIT_FAILURE);
@@ -177,6 +215,12 @@ int main()
     int *client_socket;
     sem_init(&dic_mutex, 0, 1);
 
+    if (set_env_vars())
+    {
+        printf("Error: enviroment vars don't setted correctly.\n");
+        exit(EXIT_FAILURE);
+    }
+
     // Socket creation
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
     {
@@ -186,7 +230,7 @@ int main()
 
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port = htons(PORT);
+    address.sin_port = htons(atoi(getenv("PORT")));
     if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0)
     {
         perror("ERROR: Bind failed");
@@ -200,7 +244,7 @@ int main()
         exit(EXIT_FAILURE);
     }
 
-    printf("LOG: Listening in PORT %d.\n", PORT);
+    printf("LOG: Listening in PORT %d.\n", atoi(getenv("PORT")));
 
     while (1)
     {

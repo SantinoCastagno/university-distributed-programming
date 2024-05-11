@@ -1,9 +1,9 @@
 
 all: 
-	gcc src/client.c src/utils.c -o c
-	gcc src/server_central.c src/dictionary.c src/utils.c -o sc
-	gcc src/server_horoscope.c -o sh
-	gcc src/server_weather.c -o sw
+	gcc src/client.c src/utils.c -o bin/c
+	gcc src/server_central.c src/dictionary.c src/utils.c -o bin/sc
+	gcc src/server_horoscope.c -o bin/sh
+	gcc src/server_weather.c -o bin/sw
 
 clean:
-	rm c sc sh sw
+	rm bin/c bin/sc bin/sh bin/sw

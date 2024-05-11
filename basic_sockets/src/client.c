@@ -8,8 +8,48 @@
 
 #include "utils.h"
 
-#define PORT 8080
 #define SIZE_MESSAGE 1024
+#define MAX_LINE_LENGTH 100
+
+int set_env_vars()
+{
+    FILE *archivo;
+    char linea[MAX_LINE_LENGTH];
+    char *variable, *valor;
+
+    // Abrir el archivo
+    archivo = fopen("../env/env_client.txt", "r");
+    if (archivo == NULL)
+    {
+        perror("Error al abrir el archivo");
+        return 1;
+    }
+
+    // Leer el archivo línea por línea
+    while (fgets(linea, MAX_LINE_LENGTH, archivo) != NULL)
+    {
+        // Eliminar el salto de línea al final de la línea (si existe)
+        linea[strcspn(linea, "\n")] = '\0';
+
+        // Dividir la línea en variable y valor usando el signo '=' como delimitador
+        variable = strtok(linea, "=");
+        valor = strtok(NULL, "=");
+
+        // Establecer la variable de entorno
+        if (variable != NULL && valor != NULL)
+        {
+            if (setenv(variable, valor, 1) != 0)
+            {
+                perror("Error al establecer la variable de entorno");
+                fclose(archivo);
+                return 1;
+            }
+        }
+    }
+    // Cerrar el archivo
+    fclose(archivo);
+    return 0;
+}
 
 int main(int argc, char *argv[])
 {
@@ -19,6 +59,12 @@ int main(int argc, char *argv[])
     char buffer_send[SIZE_MESSAGE] = {0}, buffer_recv[SIZE_MESSAGE] = {0};
     char *token;
     struct Date paramDate;
+
+    if (set_env_vars())
+    {
+        printf("Error: enviroment vars don't setted correctly.\n");
+        exit(EXIT_FAILURE);
+    }
 
     // Verify params
     if (argc != 3)
@@ -49,8 +95,8 @@ int main(int argc, char *argv[])
 
     // Configure server params
     serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(PORT);
-    if (inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr) <= 0)
+    serv_addr.sin_port = htons(atoi(getenv("PORT")));
+    if (inet_pton(AF_INET, getenv("IP"), &serv_addr.sin_addr) <= 0)
     {
         printf("\nInvalid address/ Address not supported \n");
         exit(EXIT_FAILURE);
