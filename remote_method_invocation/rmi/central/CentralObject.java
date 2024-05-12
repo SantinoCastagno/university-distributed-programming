@@ -8,6 +8,8 @@ import java.util.concurrent.Semaphore;
 import java.rmi.registry.*;
 import rmi.weather.*;
 import rmi.horoscope.*;
+import java.util.Properties;
+import java.io.FileInputStream;
 
 public class CentralObject extends UnicastRemoteObject implements CentralInterface {
 
@@ -23,12 +25,24 @@ public class CentralObject extends UnicastRemoteObject implements CentralInterfa
 		String weather = "", horoscope = "";
 		String[] entrys = entry.split(" "), predictions = new String[2];
 		String cache_aux_1, cache_aux_2;
+		String IP = "", PORT_HOR_String = "", PORT_WEA_String = "";
+		int PORT_HOR, PORT_WEA;
+		Properties properties = new Properties();
 
 		try {
-			Registry myRegistryWeather = LocateRegistry.getRegistry("127.0.0.1", 9090);
+			properties.load(new FileInputStream("rmi/central/config.properties"));
+			IP = properties.getProperty("IP");
+
+			PORT_HOR_String = properties.getProperty("PORT_HOR_SERVER");
+			PORT_HOR = Integer.parseInt(PORT_HOR_String);
+
+			PORT_WEA_String = properties.getProperty("PORT_WEA_SERVER");
+			PORT_WEA = Integer.parseInt(PORT_WEA_String);
+
+			Registry myRegistryWeather = LocateRegistry.getRegistry(IP, PORT_HOR);
 			WeatherInterface server_weather = (WeatherInterface) myRegistryWeather.lookup("WeatherObject");
 
-			Registry myRegistryHoroscope = LocateRegistry.getRegistry("127.0.0.1", 9091);
+			Registry myRegistryHoroscope = LocateRegistry.getRegistry(IP, PORT_WEA);
 			HoroscopeInterface server_horoscope = (HoroscopeInterface) myRegistryHoroscope.lookup("HoroscopeObject");
 
 			semaphoreHoroscope.acquire();

@@ -5,6 +5,8 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import rmi.central.CentralInterface;
 import java.util.Random;
+import java.util.Properties;
+import java.io.FileInputStream;
 
 /**
  * Client
@@ -19,9 +21,17 @@ public class ClientObject {
   private static final int THREADS = 5;
 
   public static void main(String[] args) {
+    Properties properties = new Properties();
+    String IP = "", PORTString = "";
+    int PORT;
     try {
 
-      Registry myRegistry = LocateRegistry.getRegistry("127.0.0.1", 8080);
+      properties.load(new FileInputStream("rmi/client/config.properties"));
+      IP = properties.getProperty("IP");
+      PORTString = properties.getProperty("PORT");
+      PORT = Integer.parseInt(PORTString);
+
+      Registry myRegistry = LocateRegistry.getRegistry(IP, (int) PORT);
       CentralInterface centralServer = (CentralInterface) myRegistry.lookup("CentralObject");
 
       for (int i = 0; i < THREADS; i++) {

@@ -5,6 +5,8 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.Random;
+import java.util.Properties;
+import java.io.FileInputStream;
 
 public class HoroscopeObject extends UnicastRemoteObject implements HoroscopeInterface {
 
@@ -35,8 +37,18 @@ public class HoroscopeObject extends UnicastRemoteObject implements HoroscopeInt
   }
 
   public static void main(String[] args) {
+    Properties properties = new Properties();
+    String IP = "", PORTString = "";
+    int PORT;
+
     try {
-      Registry myRegistry = LocateRegistry.createRegistry(9091);
+
+      properties.load(new FileInputStream("rmi/horoscope/config.properties"));
+      IP = properties.getProperty("IP");
+      PORTString = properties.getProperty("PORT");
+      PORT = Integer.parseInt(PORTString);
+
+      Registry myRegistry = LocateRegistry.createRegistry(PORT);
       myRegistry.rebind("HoroscopeObject", new HoroscopeObject());
       System.out.println("LOG: Horoscope server ON!");
 
