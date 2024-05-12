@@ -39,10 +39,10 @@ public class CentralObject extends UnicastRemoteObject implements CentralInterfa
 			PORT_WEA_String = properties.getProperty("PORT_WEA_SERVER");
 			PORT_WEA = Integer.parseInt(PORT_WEA_String);
 
-			Registry myRegistryWeather = LocateRegistry.getRegistry(IP, PORT_HOR);
+			Registry myRegistryWeather = LocateRegistry.getRegistry(IP, PORT_WEA);
 			WeatherInterface server_weather = (WeatherInterface) myRegistryWeather.lookup("WeatherObject");
 
-			Registry myRegistryHoroscope = LocateRegistry.getRegistry(IP, PORT_WEA);
+			Registry myRegistryHoroscope = LocateRegistry.getRegistry(IP, PORT_HOR);
 			HoroscopeInterface server_horoscope = (HoroscopeInterface) myRegistryHoroscope.lookup("HoroscopeObject");
 
 			semaphoreHoroscope.acquire();
@@ -82,8 +82,15 @@ public class CentralObject extends UnicastRemoteObject implements CentralInterfa
 	}
 
 	public static void main(String[] args) {
+		Properties properties = new Properties();
+		String PORTString = "";
+		int PORT;
 		try {
-			Registry myRegistry = LocateRegistry.createRegistry(8080);
+			properties.load(new FileInputStream("rmi/central/config.properties"));
+			PORTString = properties.getProperty("PORT");
+			PORT = Integer.parseInt(PORTString);
+
+			Registry myRegistry = LocateRegistry.createRegistry(PORT);
 			myRegistry.rebind("CentralObject", new CentralObject());
 			System.out.println("LOG: Central server ON");
 		} catch (Exception e) {
