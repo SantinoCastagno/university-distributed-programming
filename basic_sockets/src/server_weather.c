@@ -91,7 +91,7 @@ void *connection_handler(void *socket_desc)
     }
 
     printf("LOG: Handling request.\n");
-    sleep(5);
+    sleep(8);
 
     // Generate response, select a random string from the options
     buffer = selectRandomString(options, numOptions);

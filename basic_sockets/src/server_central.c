@@ -37,7 +37,7 @@ int set_env_vars()
         perror("Error al abrir el archivo");
         return 1;
     }
-    printf("DEBUG1\n");
+
     // Leer el archivo línea por línea
     while (fgets(linea, MAX_LINE_LENGTH, archivo) != NULL)
     {
@@ -59,7 +59,7 @@ int set_env_vars()
             }
         }
     }
-    printf("DEBUG2\n");
+
     // Cerrar el archivo
     fclose(archivo);
     return 0;
@@ -82,7 +82,7 @@ void *connection_handler(void *args)
     read(*client_socket, buffer_client, SIZE_MESSAGE);
 
     printf("LOG: Open connection.\n");
-    sleep(2);
+    sleep(1);
 
     // Check message receive
     if (sscanf(buffer_client, "%s %s", &sign, &date) != 2)
@@ -125,7 +125,8 @@ void *connection_handler(void *args)
         // Configure horoscope server params
         serv_addr.sin_family = AF_INET;
         serv_addr.sin_port = htons(atoi(getenv("PORT_HOR_SERVER")));
-        if (inet_pton(AF_INET, getenv("IP"), &serv_addr.sin_addr) <= 0)
+        printf("%s",getenv("IP_HOR_SERVER"));
+        if (inet_pton(AF_INET, getenv("IP_HOR_SERVER"), &serv_addr.sin_addr) <= 0)
         {
             perror("Invalid address/ Address not supported\n");
             exit(EXIT_FAILURE);
@@ -165,7 +166,7 @@ void *connection_handler(void *args)
         // Configure weather server params
         serv_addr.sin_family = AF_INET;
         serv_addr.sin_port = htons(atoi(getenv("PORT_WEA_SERVER")));
-        if (inet_pton(AF_INET, getenv("IP"), &serv_addr.sin_addr) <= 0)
+        if (inet_pton(AF_INET, getenv("IP_WEA_SERVER"), &serv_addr.sin_addr) <= 0)
         {
             perror("Invalid address/ Address not supported\n");
             exit(EXIT_FAILURE);
@@ -186,7 +187,7 @@ void *connection_handler(void *args)
         valread = read(client_we_fd, buffer_weather, SIZE_MESSAGE - 1);
         sem_wait(&dic_mutex);
         printf("DEBUG: inserting weather in the cache.\t%lu\n", pthread_self());
-        sleep(20);
+        sleep(8);
         insert(dic, date, buffer_weather);
         sem_post(&dic_mutex);
     }
@@ -217,7 +218,7 @@ int main()
 
     if (set_env_vars())
     {
-        printf("Error: enviroment vars don't setted correctly.\n");
+        printf("ERROR: enviroment vars don't setted correctly.\n");
         exit(EXIT_FAILURE);
     }
 
