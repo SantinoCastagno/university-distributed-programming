@@ -45,32 +45,39 @@ public class CentralObject extends UnicastRemoteObject implements CentralInterfa
 			Registry myRegistryHoroscope = LocateRegistry.getRegistry(IP, PORT_HOR);
 			HoroscopeInterface server_horoscope = (HoroscopeInterface) myRegistryHoroscope.lookup("HoroscopeObject");
 
+			// Checks the cache for the horoscope
 			semaphoreHoroscope.acquire();
 			cache_aux_1 = cache.get(entrys[0]);
 			semaphoreHoroscope.release();
 
 			if (cache_aux_1 == null) {
+				// If the horoscope is not in the cache, it is requested from the server
 				horoscope = server_horoscope.requestHoroscope(entrys[0]);
 				predictions[0] = horoscope;
 				semaphoreHoroscope.acquire();
 				cache.put(entrys[0], horoscope);
 				semaphoreHoroscope.release();
 			} else {
+				// If the horoscope is in the cache, it is saved for return
 				semaphoreHoroscope.acquire();
 				predictions[0] = cache_aux_1;
 				semaphoreHoroscope.release();
 			}
-
+	
+			// Checks the cache for the weather
 			semaphoreWeather.acquire();
 			cache_aux_2 = cache.get(entrys[1]);
 			semaphoreWeather.release();
+
 			if (cache_aux_2 == null) {
+				// If the weather is not in the cache, it is requested from the server
 				weather = server_weather.requestWeather(entrys[1]);
 				predictions[1] = weather;
 				semaphoreWeather.acquire();
-				cache.put(cache_aux_2, weather);
+				cache.put(entrys[1], weather);
 				semaphoreWeather.release();
 			} else {
+				// If the weather is in the cache, it is saved for return
 				semaphoreWeather.acquire();
 				predictions[1] = cache.get(entrys[1]);
 				semaphoreWeather.release();
@@ -78,6 +85,7 @@ public class CentralObject extends UnicastRemoteObject implements CentralInterfa
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
 		return predictions;
 	}
 
