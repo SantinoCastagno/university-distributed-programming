@@ -23,4 +23,8 @@ struct Date
     int day;
 };
 
+int set_env_vars(
+    char* file_path
+);
+
 #endif

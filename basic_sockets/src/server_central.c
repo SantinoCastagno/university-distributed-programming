@@ -15,6 +15,7 @@
 #define SIZE_MESSAGE 1024
 #define SIZE_DICTIONARY 100
 #define MESSAGE_ERROR "ERROR: incorrect request format\n"
+#define FILE_ENV_PATH "../env/env_server_central.txt"
 
 sem_t dic_mutex;
 
@@ -24,46 +25,6 @@ typedef struct
     Dictionary *dic;
 } ThreadArgs;
 
-int set_env_vars()
-{
-    FILE *archivo;
-    char linea[MAX_LINE_LENGTH];
-    char *variable, *valor;
-
-    // Abrir el archivo
-    archivo = fopen("../env/env_server_central.txt", "r");
-    if (archivo == NULL)
-    {
-        perror("Error al abrir el archivo");
-        return 1;
-    }
-
-    // Leer el archivo línea por línea
-    while (fgets(linea, MAX_LINE_LENGTH, archivo) != NULL)
-    {
-        // Eliminar el salto de línea al final de la línea (si existe)
-        linea[strcspn(linea, "\n")] = '\0';
-
-        // Dividir la línea en variable y valor usando el signo '=' como delimitador
-        variable = strtok(linea, "=");
-        valor = strtok(NULL, "=");
-
-        // Establecer la variable de entorno
-        if (variable != NULL && valor != NULL)
-        {
-            if (setenv(variable, valor, 1) != 0)
-            {
-                perror("Error al establecer la variable de entorno");
-                fclose(archivo);
-                return 1;
-            }
-        }
-    }
-
-    // Cerrar el archivo
-    fclose(archivo);
-    return 0;
-}
 
 // function executed for each thread
 void *connection_handler(void *args)
@@ -216,7 +177,7 @@ int main()
     int *client_socket;
     sem_init(&dic_mutex, 0, 1);
 
-    if (set_env_vars())
+    if (set_env_vars(FILE_ENV_PATH))
     {
         printf("ERROR: enviroment vars don't setted correctly.\n");
         exit(EXIT_FAILURE);

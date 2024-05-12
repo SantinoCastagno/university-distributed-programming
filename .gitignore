@@ -1,2 +1,4 @@
 *.class
 *.sm
+
+./basic_sockets/bin/*

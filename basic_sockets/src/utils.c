@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
+#define MAX_LINE_LENGTH 100
 
 struct Date
 {
@@ -35,4 +38,44 @@ struct Date stringToDate(char *dateString)
     clientDate.day = day;
 
     return clientDate;
+}
+
+int set_env_vars(char *file_path)
+{
+    FILE *archivo;
+    char linea[MAX_LINE_LENGTH];
+    char *variable, *valor;
+
+    // Abrir el archivo
+    archivo = fopen(file_path, "r");
+    if (archivo == NULL)
+    {
+        perror("Error al abrir el archivo");
+        return 1;
+    }
+
+    // Leer el archivo línea por línea
+    while (fgets(linea, MAX_LINE_LENGTH, archivo) != NULL)
+    {
+        // Eliminar el salto de línea al final de la línea (si existe)
+        linea[strcspn(linea, "\n")] = '\0';
+
+        // Dividir la línea en variable y valor usando el signo '=' como delimitador
+        variable = strtok(linea, "=");
+        valor = strtok(NULL, "=");
+
+        // Establecer la variable de entorno
+        if (variable != NULL && valor != NULL)
+        {
+            if (setenv(variable, valor, 1) != 0)
+            {
+                perror("Error al establecer la variable de entorno");
+                fclose(archivo);
+                return 1;
+            }
+        }
+    }
+    // Cerrar el archivo
+    fclose(archivo);
+    return 0;
 }
