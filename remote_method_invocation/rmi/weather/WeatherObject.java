@@ -5,6 +5,8 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.Random;
+import java.util.Properties;
+import java.io.FileInputStream;
 
 public class WeatherObject extends UnicastRemoteObject implements WeatherInterface {
 
@@ -35,8 +37,16 @@ public class WeatherObject extends UnicastRemoteObject implements WeatherInterfa
   }
 
   public static void main(String[] args) {
+    Properties properties = new Properties();
+    String IP = "", PORTString = "";
+    int PORT;
     try {
-      Registry myRegistry = LocateRegistry.createRegistry(9090);
+
+      properties.load(new FileInputStream("rmi/weather/config.properties"));
+      PORTString = properties.getProperty("PORT");
+      PORT = Integer.parseInt(PORTString);
+
+      Registry myRegistry = LocateRegistry.createRegistry(PORT);
       myRegistry.rebind("WeatherObject", new WeatherObject());
       System.out.println("LOG: Weather Server ON!");
 
