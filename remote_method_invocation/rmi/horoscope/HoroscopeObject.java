@@ -38,15 +38,14 @@ public class HoroscopeObject extends UnicastRemoteObject implements HoroscopeInt
 
   public static void main(String[] args) {
     Properties properties = new Properties();
-    String IP = "", PORTString = "";
+    String IP = "";
     int PORT;
 
     try {
 
       properties.load(new FileInputStream("rmi/horoscope/config.properties"));
       IP = properties.getProperty("IP");
-      PORTString = properties.getProperty("PORT");
-      PORT = Integer.parseInt(PORTString);
+      PORT = Integer.parseInt(properties.getProperty("PORT"));
 
       Registry myRegistry = LocateRegistry.createRegistry(PORT);
       myRegistry.rebind("HoroscopeObject", new HoroscopeObject());

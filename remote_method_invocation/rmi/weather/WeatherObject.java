@@ -38,13 +38,12 @@ public class WeatherObject extends UnicastRemoteObject implements WeatherInterfa
 
   public static void main(String[] args) {
     Properties properties = new Properties();
-    String IP = "", PORTString = "";
+    String IP = "";
     int PORT;
     try {
 
       properties.load(new FileInputStream("rmi/weather/config.properties"));
-      PORTString = properties.getProperty("PORT");
-      PORT = Integer.parseInt(PORTString);
+      PORT = Integer.parseInt(properties.getProperty("PORT"));
 
       Registry myRegistry = LocateRegistry.createRegistry(PORT);
       myRegistry.rebind("WeatherObject", new WeatherObject());

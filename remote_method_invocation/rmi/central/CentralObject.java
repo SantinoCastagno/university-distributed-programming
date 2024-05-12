@@ -25,7 +25,7 @@ public class CentralObject extends UnicastRemoteObject implements CentralInterfa
 		String weather = "", horoscope = "";
 		String[] entrys = entry.split(" "), predictions = new String[2];
 		String cache_aux_1, cache_aux_2;
-		String IP = "", PORT_HOR_String = "", PORT_WEA_String = "";
+		String IP = "", IP_HOR = "", IP_WEA = "";
 		int PORT_HOR, PORT_WEA;
 		Properties properties = new Properties();
 
@@ -33,16 +33,16 @@ public class CentralObject extends UnicastRemoteObject implements CentralInterfa
 			properties.load(new FileInputStream("rmi/central/config.properties"));
 			IP = properties.getProperty("IP");
 
-			PORT_HOR_String = properties.getProperty("PORT_HOR_SERVER");
-			PORT_HOR = Integer.parseInt(PORT_HOR_String);
+			PORT_HOR = Integer.parseInt(properties.getProperty("PORT_HOR_SERVER"));
+			IP_HOR = properties.getProperty("IP_HOR_SERVER");
 
-			PORT_WEA_String = properties.getProperty("PORT_WEA_SERVER");
-			PORT_WEA = Integer.parseInt(PORT_WEA_String);
+			PORT_WEA = Integer.parseInt(properties.getProperty("PORT_WEA_SERVER"));
+			IP_WEA = properties.getProperty("IP_WEA_SERVER");
 
-			Registry myRegistryWeather = LocateRegistry.getRegistry(IP, PORT_WEA);
+			Registry myRegistryWeather = LocateRegistry.getRegistry(IP_WEA, PORT_WEA);
 			WeatherInterface server_weather = (WeatherInterface) myRegistryWeather.lookup("WeatherObject");
 
-			Registry myRegistryHoroscope = LocateRegistry.getRegistry(IP, PORT_HOR);
+			Registry myRegistryHoroscope = LocateRegistry.getRegistry(IP_HOR, PORT_HOR);
 			HoroscopeInterface server_horoscope = (HoroscopeInterface) myRegistryHoroscope.lookup("HoroscopeObject");
 
 			// Checks the cache for the horoscope
@@ -91,12 +91,10 @@ public class CentralObject extends UnicastRemoteObject implements CentralInterfa
 
 	public static void main(String[] args) {
 		Properties properties = new Properties();
-		String PORTString = "";
 		int PORT;
 		try {
 			properties.load(new FileInputStream("rmi/central/config.properties"));
-			PORTString = properties.getProperty("PORT");
-			PORT = Integer.parseInt(PORTString);
+			PORT = Integer.parseInt(properties.getProperty("PORT"));
 
 			Registry myRegistry = LocateRegistry.createRegistry(PORT);
 			myRegistry.rebind("CentralObject", new CentralObject());
