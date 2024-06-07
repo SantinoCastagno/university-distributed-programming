@@ -2,3 +2,5 @@
 *.sm
 
 ./basic_sockets/bin/*
+
+myenv/
