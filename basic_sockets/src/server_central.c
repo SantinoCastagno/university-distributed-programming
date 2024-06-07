@@ -42,13 +42,13 @@ void *connection_handler(void *args)
     // Extract message
     read(*client_socket, buffer_client, SIZE_MESSAGE);
 
-    printf("LOG: Open connection.\n");
+    printf("(Central Server) LOG: Open connection.\n");
     sleep(1);
 
     // Check message receive
     if (sscanf(buffer_client, "%s %s", &sign, &date) != 2)
     {
-        printf("Error: incorrect format of the message.\n");
+        printf("(Central Server) ERROR: incorrect format of the message.\n");
         write(*client_socket, MESSAGE_ERROR, strlen(MESSAGE_ERROR));
         close(*client_socket);
         free(client_socket);
@@ -58,7 +58,7 @@ void *connection_handler(void *args)
     // Check zodiac sign
     if (strcmp(sign, S1) != 0 && strcmp(sign, S2) != 0 && strcmp(sign, S3) != 0 && strcmp(sign, S4) != 0 && strcmp(sign, S5) != 0 && strcmp(sign, S6) != 0 && strcmp(sign, S7) != 0 && strcmp(sign, S8) != 0 && strcmp(sign, S9) != 0 && strcmp(sign, S10) != 0 && strcmp(sign, S11) != 0 && strcmp(sign, S12) != 0)
     {
-        printf("Error: incorrect zodiac sign name.\n");
+        printf("(Central Server) ERROR: incorrect zodiac sign name.\n");
         write(*client_socket, MESSAGE_ERROR, strlen(MESSAGE_ERROR));
         close(*client_socket);
         free(client_socket);
@@ -79,17 +79,16 @@ void *connection_handler(void *args)
         // Socket creation to the horoscope server
         if ((client_hs_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
         {
-            perror("Socket creation error\n");
+            perror("(Central Server) ERROR: Socket creation error\n");
             exit(EXIT_FAILURE);
         }
 
         // Configure horoscope server params
         serv_addr.sin_family = AF_INET;
         serv_addr.sin_port = htons(atoi(getenv("PORT_HOR_SERVER")));
-        printf("%s",getenv("IP_HOR_SERVER"));
         if (inet_pton(AF_INET, getenv("IP_HOR_SERVER"), &serv_addr.sin_addr) <= 0)
         {
-            perror("Invalid address/ Address not supported\n");
+            perror("(Central Server) ERROR: Invalid address/Address not supported\n");
             exit(EXIT_FAILURE);
         }
 
@@ -97,7 +96,7 @@ void *connection_handler(void *args)
         if ((status = connect(client_hs_fd, (struct sockaddr *)&serv_addr,
                               sizeof(serv_addr))) < 0)
         {
-            perror("Connection Failed\n");
+            perror("(Central Server) ERROR: Connection Failed\n");
             exit(EXIT_FAILURE);
         }
 
@@ -120,7 +119,7 @@ void *connection_handler(void *args)
         // Socket creation to weather server
         if ((client_we_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
         {
-            perror("Socket creation error\n");
+            perror("(Central Server) ERROR: Socket creation error\n");
             exit(EXIT_FAILURE);
         }
 
@@ -129,7 +128,7 @@ void *connection_handler(void *args)
         serv_addr.sin_port = htons(atoi(getenv("PORT_WEA_SERVER")));
         if (inet_pton(AF_INET, getenv("IP_WEA_SERVER"), &serv_addr.sin_addr) <= 0)
         {
-            perror("Invalid address/ Address not supported\n");
+            perror("(Central Server) ERROR: Invalid address/ Address not supported\n");
             exit(EXIT_FAILURE);
         }
 
@@ -137,7 +136,7 @@ void *connection_handler(void *args)
         if ((status = connect(client_we_fd, (struct sockaddr *)&serv_addr,
                               sizeof(serv_addr))) < 0)
         {
-            perror("ERROR: Connection failed");
+            perror("(Central Server) ERROR: Connection failed");
             exit(EXIT_FAILURE);
         }
 
@@ -147,7 +146,7 @@ void *connection_handler(void *args)
         // Read answer from eather server
         valread = read(client_we_fd, buffer_weather, SIZE_MESSAGE - 1);
         sem_wait(&dic_mutex);
-        printf("DEBUG: inserting weather in the cache.\t%lu\n", pthread_self());
+        printf("(Central Server) LOG: inserting weather in the cache.\t%lu\n", pthread_self());
         sleep(8);
         insert(dic, date, buffer_weather);
         sem_post(&dic_mutex);
@@ -162,7 +161,7 @@ void *connection_handler(void *args)
 
     // Send response to the client
     write(*client_socket, buffer_client, strlen(buffer_client));
-    printf("LOG: Response sent\n", dic);
+    printf("(Central Server) LOG: Response sent\n", dic);
     close(*client_socket);
     free(client_socket);
     pthread_exit(NULL);
@@ -179,14 +178,14 @@ int main()
 
     if (set_env_vars(FILE_ENV_PATH))
     {
-        printf("ERROR: enviroment vars don't setted correctly.\n");
+        printf("(Central Server) ERROR: enviroment vars don't setted correctly.\n");
         exit(EXIT_FAILURE);
     }
 
     // Socket creation
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
     {
-        perror("ERROR: Socket creation failed");
+        perror("(Central Server) ERROR: Socket creation failed");
         exit(EXIT_FAILURE);
     }
 
@@ -195,18 +194,18 @@ int main()
     address.sin_port = htons(atoi(getenv("PORT")));
     if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0)
     {
-        perror("ERROR: Bind failed");
+        perror("(Central Server) ERROR: Bind failed");
         exit(EXIT_FAILURE);
     }
 
     // Listen for connections
     if (listen(server_fd, MAX_CONNECTIONS) < 0)
     {
-        perror("ERROR: Listen failed");
+        perror("(Central Server) ERROR: Listen failed");
         exit(EXIT_FAILURE);
     }
 
-    printf("LOG: Listening in PORT %d.\n", atoi(getenv("PORT")));
+    printf("(Central Server) LOG: Listening in PORT %d.\n", atoi(getenv("PORT")));
 
     while (1)
     {
@@ -214,7 +213,7 @@ int main()
         client_socket = malloc(4);
         if ((*client_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen)) < 0)
         {
-            perror("Connection failed");
+            perror("(Central Server) ERROR: Connection failed");
             exit(EXIT_FAILURE);
         }
 
@@ -223,11 +222,11 @@ int main()
         ThreadArgs args = {client_socket, dic};
         if (pthread_create(&thread_id, NULL, connection_handler, (void *)&args) < 0)
         {
-            perror("Thread creation failed");
+            perror("(Central Server) ERROR: Thread creation failed");
             exit(EXIT_FAILURE);
         }
 
-        printf("LOG: Handler assigned\n");
+        printf("(Central Server) LOG: Handler assigned\n");
     }
     free_dictionary(dic);
 
