@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script>
+        const socket.io();
+
+        socket.on('message', function(msg){
+        $('#messages').append(msg)
+        })
+
+        $('#send').on('click',function(){
+        socket.send($('#myMessage').val());
+        $('#myMessage').val('');
+        });
+        
+    </script>
+</head>
+<body>
+    <ul id="messages"></ul>
+    <form id="form" action="">
+        <input id="#myMessage" type="text" /><button type = "button" id ="send">Enviar</button>
+    </form>
+</body>
+</html>
