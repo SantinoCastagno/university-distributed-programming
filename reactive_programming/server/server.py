@@ -1,22 +1,18 @@
-import eventlet
-import socketio
+#!/usr/bin/env python
 
-sio = socketio.Server()
-app = socketio.WSGIApp(sio, static_files={
-    '/': {'content_type': 'text/html', 'filename': 'index.html'}
-})
+import asyncio
+from websockets.server import serve
 
-@sio.event
-def connect(sid, environ):
-    print('connect ', sid)
+ws_list = []
 
-@sio.event
-def my_message(sid, data):
-    print('message ', data)
+async def handler(ws):
+    ws_list.append(ws)
+    async for message in ws:
+        print(ws_list)
+        await ws.send(message)
 
-@sio.event
-def disconnect(sid):
-    print('disconnect ', sid)
+async def main():
+    async with serve(handler, "localhost", 8765):
+        await asyncio.Future()  # run forever
 
-if __name__ == '__main__':
-    eventlet.wsgi.server(eventlet.listen(('', 5000)), app)
+asyncio.run(main())

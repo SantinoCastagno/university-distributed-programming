@@ -1,19 +1,32 @@
-import socketio
+#!/usr/bin/env python
 
-sio = socketio.Client()
+import asyncio
+import time
+import websockets
+from websockets import connect
 
-@sio.event
-def connect():
-    print('connection established')
+async def hello():
+    while True:
+        try:
+            async with connect("ws://localhost:8765") as ws:
+                while True:
+                    await ws.send("Hello world!")
+                    message = await ws.recv()
+                    print(f"Received: {message}")
+                    time.sleep(10)
+        except websockets.ConnectionClosed:
+            continue
 
-@sio.event
-def my_message(data):
-    print('message received with ', data)
-    sio.emit('my response', {'response': 'my response'})
+async def run_connection():
+    async for websocket in connect("ws://localhost:8765"):
+        try:
+            while True:
+                        await websocket.send("Hello world!")
+                        message = await websocket.recv()
+                        print(f"Received: {message}")
+                        time.sleep(5)
+        except websockets.ConnectionClosed:
+            print("LOG: connection failure, reconnecting..")
+            continue
 
-@sio.event
-def disconnect():
-    print('disconnected from server')
-
-sio.connect('http://localhost:5000')
-sio.wait()
+asyncio.run(run_connection())

@@ -3,4 +3,4 @@
 
 ./basic_sockets/bin/*
 
-myenv/
+venv/
