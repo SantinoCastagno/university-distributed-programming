@@ -1,1 +1,4 @@
+reactivex==4.0.4
+typing_extensions==4.12.2
 websocket-client==1.8.0
+websockets==12.0
