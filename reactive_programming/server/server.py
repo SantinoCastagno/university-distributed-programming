@@ -1,12 +1,17 @@
 #!/usr/bin/env python
 import asyncio
 from websockets.server import serve
-from reactivex import Subject
+import reactivex
 
-msg_list = Subject()
+def push_five_strings(observer, scheduler):
+    observer.on_next("Alpha")
+    observer.on_next("Beta")
+    observer.on_next("Gamma")
+    observer.on_next("Delta")
+    observer.on_next("Epsilon")
+    observer.on_completed()
 
-# def on_next(ws, msg_list):
-#     print("Hola")
+observable_chat = reactivex.create(push_five_strings)
     
 def on_error(e):
     print("Error Occurred: {0}".format(e))
@@ -15,13 +20,9 @@ def on_completed():
     print("Clientes actualizados.")
 
 async def handler(ws):
-    msg_list.subscribe(
-        on_next  = lambda i: print("Received {0}".format(i)),
-        on_error = on_error,
-        on_completed = on_completed,
-    )
+    observable_chat.subscribe()
     async for message in ws:
-        msg_list.on_next(message)
+        print(message)
         
 
 async def main():
