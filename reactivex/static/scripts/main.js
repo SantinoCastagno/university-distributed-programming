@@ -36,8 +36,14 @@ var socket = io();
 
         socket.on('message', function(msg) {
             var messages = document.getElementById('messages');
+            var name = msg.split(':')[0];
+            var message = msg.split(':')[1];
             var li = document.createElement('li');
-            li.appendChild(document.createTextNode(msg));
+            li.innerHTML = `
+                <div class = "message" style="background-color: #18122B; border-radius: 5px; padding: 0 10px 0 10px;">
+                    <p style = "font-weight: bold; padding: 5px; margin: 0;">${name}</p>
+                    <p style = "color:darkgray; padding: 5px; margin: 0;">${message}</p>
+                </div>`;
             messages.appendChild(li);
         });
 
