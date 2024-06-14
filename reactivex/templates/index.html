@@ -3,28 +3,75 @@
 <head>
     <title>Flask Chat</title>
     <style>
-        body { font-family: Arial, sans-serif; }
+        body { font-family: Arial, sans-serif; overflow: hidden; background-color: #18122B;}
         #chat { border: 1px solid #ddd; padding: 10px; max-width: 600px; margin: auto; }
         #messages { list-style: none; padding: 0; }
         #messages li { padding: 8px; margin-bottom: 10px; border-bottom: 1px solid #ddd; }
         #messageInput { width: 100%; padding: 10px; }
-        #joinChat { display: block; }
+        #chat { 
+            display: flex;
+            flex-direction: column;
+            gap: 0.5em; 
+            padding: 0.5em; 
+            border-radius: 5px; 
+            background-color: #443C68; 
+            justify-content: center;
+            align-items: center;
+            border: none;
+        }
+        #joinChat { 
+            display: flex;
+            flex-direction: column;
+            gap: 0.5em; 
+            padding: 0.5em; 
+            border-radius: 5px; 
+            background-color: #443C68; 
+            justify-content: center;
+            align-items: center;
+        }
+        #joinChat button {
+            width: 18em;
+            border-radius: 5px;
+            border: none;
+            padding: 1em;
+            font-size: 0.85em;
+        }
+        h2 {
+            color: whitesmoke;
+        }
+        input {
+            background-color: #393053;
+            border-radius: 5px;
+            border: none;
+            padding: 0.5em;
+            color: whitesmoke;
+            min-width: 18em;
+            height: 2.5em;
+        }
+        ::placeholder {
+            color: #443C68;
+        }
+        .centered_section { display: flex; justify-content: center; align-items: center; height: 100vh; }
     </style>
 </head>
 <body>
-    <div id="joinChat">
-        <h2>Join Chat</h2>
-        <input id="username" placeholder="Enter your username" />
-        <input id="room" placeholder="Enter room name" />
-        <button onclick="joinChat()">Join</button>
-    </div>
-    <div id="chat" style="display: none;">
-        <h2>Flask WebSocket Chat</h2>
-        <ul id="messages"></ul>
-        <input id="messageInput" autocomplete="off" placeholder="Type your message here..." />
-        <button onclick="sendMessage()">Send</button>
-        <button onclick="leaveChat()">Leave</button>
-    </div>
+    <section class = "centered_section" id = "join_chat_section">
+        <div id="joinChat">
+            <h2>Join Chat</h2>
+            <input id="username" placeholder="Enter your username" />
+            <input id="room" placeholder="Enter room name" />
+            <button onclick="joinChat()">Join</button>
+        </div>
+    </section>
+    <section class = "centered_section">
+        <div id="chat" style="display: none;">
+            <h2>Flask WebSocket Chat</h2>
+            <ul id="messages"></ul>
+            <input id="messageInput" autocomplete="off" placeholder="Type your message here..." />
+            <button onclick="sendMessage()">Send</button>
+            <button onclick="leaveChat()">Leave</button>
+        </div>
+    </section>
 
     <!-- Include SocketIO -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.min.js"></script>
@@ -40,7 +87,7 @@
                 currentRoom = room;
                 socket.emit('join', { username: username, room: room });
 
-                document.getElementById('joinChat').style.display = 'none';
+                document.getElementById('join_chat_section').style.display = 'none';
                 document.getElementById('chat').style.display = 'block';
             }
         }
