@@ -1,28 +1,83 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat</title>
-    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
-    <script>
-        const socket.io();
-
-        socket.on('message', function(msg){
-        $('#messages').append(msg)
-        })
-
-        $('#send').on('click',function(){
-        socket.send($('#myMessage').val());
-        $('#myMessage').val('');
-        });
-        
-    </script>
+    <title>Flask Chat</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        #chat { border: 1px solid #ddd; padding: 10px; max-width: 600px; margin: auto; }
+        #messages { list-style: none; padding: 0; }
+        #messages li { padding: 8px; margin-bottom: 10px; border-bottom: 1px solid #ddd; }
+        #messageInput { width: 100%; padding: 10px; }
+        #joinChat { display: block; }
+    </style>
 </head>
 <body>
-    <ul id="messages"></ul>
-    <form id="form" action="">
-        <input id="#myMessage" type="text" /><button type = "button" id ="send">Enviar</button>
-    </form>
+    <div id="joinChat">
+        <h2>Join Chat</h2>
+        <input id="username" placeholder="Enter your username" />
+        <input id="room" placeholder="Enter room name" />
+        <button onclick="joinChat()">Join</button>
+    </div>
+    <div id="chat" style="display: none;">
+        <h2>Flask WebSocket Chat</h2>
+        <ul id="messages"></ul>
+        <input id="messageInput" autocomplete="off" placeholder="Type your message here..." />
+        <button onclick="sendMessage()">Send</button>
+        <button onclick="leaveChat()">Leave</button>
+    </div>
+
+    <!-- Include SocketIO -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.min.js"></script>
+    <script type="text/javascript" charset="utf-8">
+        var socket = io();
+        var currentRoom = '';
+
+        function joinChat() {
+            var username = document.getElementById('username').value;
+            var room = document.getElementById('room').value;
+
+            if (username && room) {
+                currentRoom = room;
+                socket.emit('join', { username: username, room: room });
+
+                document.getElementById('joinChat').style.display = 'none';
+                document.getElementById('chat').style.display = 'block';
+            }
+        }
+
+        function leaveChat() {
+            var username = document.getElementById('username').value;
+            if (currentRoom) {
+                socket.emit('leave', { username: username, room: currentRoom });
+                currentRoom = '';
+                document.getElementById('chat').style.display = 'none';
+                document.getElementById('joinChat').style.display = 'block';
+            }
+        }
+
+        function sendMessage() {
+            var messageInput = document.getElementById('messageInput');
+            var message = messageInput.value;
+            if (message) {
+                socket.send(message);
+                messageInput.value = '';
+            }
+        }
+
+        socket.on('message', function(msg) {
+            var messages = document.getElementById('messages');
+            var li = document.createElement('li');
+            li.appendChild(document.createTextNode(msg));
+            messages.appendChild(li);
+        });
+
+        socket.on('status', function(data) {
+            var messages = document.getElementById('messages');
+            var li = document.createElement('li');
+            li.style.color = 'gray';
+            li.appendChild(document.createTextNode(data.msg));
+            messages.appendChild(li);
+        });
+    </script>
 </body>
 </html>
